@@ -7,9 +7,9 @@ The general manager of The Gilded Ace, a fictional 300-machine casino, wants to 
 **Headline:** none of the manager's 10 machines makes our replacement list.
 - 2 are already retired, and 1 has been on the floor for only 49 days.
 - 1 (M-1158) pays out far beyond its paytable and needs inspecting, not replacing.
-- 6 sit in Back Forty, a zone whose play fell 29% when a single walkway closed.
+- 6 are weak for their spot, but sit in Back Forty, a zone whose play fell 29% when a single walkway closed. A new title there adds less than half the theo it would in a busy zone.
 
-The machines that really underperform for their spot are Royal Draw cabinets set to a 95% payout, in busy zones.
+Our replacement targets are the weak earners where a new title gains most: Royal Draw cabinets set to a 95% payout, in busy zones.
 
 > **New to the project? Start with [HANDOFF.md](HANDOFF.md)**: setup, checks, open tasks and how we work.
 
@@ -39,7 +39,7 @@ GitHub release ──► 01_ingest_raw (notebook) ──► UC Volume /raw  (SHA
    Genie space over the gold tables for the manager's follow-up questions (genie/GENIE_SPACE.md)
 ```
 
-- **Lakeflow expectations do the analytical hygiene.** Off-floor machine-days are dropped, not counted as zero sales. The update fails if meters don't balance or if the six-part decomposition doesn't sum to the gap. The plan fails if it goes over budget or uses more than three action types.
+- **Lakeflow expectations do the analytical hygiene.** Off-floor machine-days are dropped, not counted as zero sales. The update fails if meters don't balance or go negative, if an RTP is not a real payback, if a machine-day is duplicated or missing, or if the six-part decomposition doesn't sum to the gap. The plan fails if it goes over budget or uses more than three action types. `local/stress_test.py` feeds broken data through the pipeline to prove each of these fires.
 - **Unity Catalog** governs the raw volume, every table, and the registered forecast model.
 - **MLflow** tracks every forecast candidate, the April selection, the frozen champion and its holdout plot.
 - **One SQL codebase.** The same `src/pipeline/*.sql` files run on Databricks and, through `local/lakeflow_duckdb.py`, on DuckDB for verification. Expectations are enforced in both.
@@ -61,6 +61,7 @@ python -m venv .venv && .venv/Scripts/pip install -r requirements.txt     # Pyth
 python local/run_local.py          # bronze → silver → gold → forecast → dashboard/data/gilded_ace.json
 python local/build_pages.py        # dashboard/app.html → dashboard/index.html
 node local/check_dashboard.js      # dashboard maths must match the pipeline (0 mismatches)
+python local/stress_test.py        # independent re-checks, robustness tests, broken-data guards
 cd dashboard && python -m http.server
 ```
 
@@ -74,7 +75,7 @@ Each machine's gap to a typical machine splits exactly into six parts:
 - **Hold setting:** theo lost to a more generous paytable than its neighbours.
 - **Time on floor:** days not installed.
 
-Luck is tested exactly. The per-spin payout variance comes from `game_math`, so Var(house win) = Σ bet² × Var(payout/bet), and the leak cut-off is |z| > 3.6, which accounts for running 310 tests at once. The **fair index** compares theo with what same-zone machines earned on the same days per available second, with a 95% interval across days. The forecast is chosen on April, frozen on April 30, and scored once on May–June against a constant-mean baseline.
+Luck is tested exactly. The per-spin payout variance comes from `game_math`, so Var(house win) = Σ bet² × Var(payout/bet), and the leak cut-off is |z| > 3.6, which accounts for running 310 tests at once. That luck test only counts over 150+ days, because one jackpot can push an honest machine past it in a short window; the hit-rate test (|z| > 6) applies on any window. The **fair index** compares theo with what same-zone machines earned on the same days per available second, with a 95% interval across days. The forecast is chosen on April, frozen on April 30, and scored once on May–June against a constant-mean baseline.
 
 ## Repository
 

@@ -455,7 +455,8 @@ function computeScorecard(a, b) {
 }
 function verdictOf(s, nD, endDate) {
   const hiCI = s.fair_index + 1.96 * (s.fair_index_se || 0);
-  if (Math.abs(s.hit_rate_z) > 6 || s.luck_z < -3.6) return "Leak? Inspect payout";
+  // luck z only counts on 150+ days: on short windows one jackpot pushes honest machines past -3.6 (same rule as gold_machines.sql)
+  if (Math.abs(s.hit_rate_z) > 6 || (s.luck_z < -3.6 && s.days_on_floor >= 150)) return "Leak? Inspect payout";
   if (s.retire_date && s.retire_date <= endDate) return "Already retired";
   if (s.days_on_floor < 150 * nD / 181) return "New install (short exposure)";
   if (hiCI < 0.85 && s.hold_setting_usd < s.appeal_usd) return "Weak earner: low-hold game";
@@ -478,14 +479,19 @@ function sectionAnswer() {
   const counts = {}; mgr.forEach(s => counts[s.verdict] = (counts[s.verdict] || 0) + 1);
   const scale = Math.max(...mgr.map(s => CAUSES.reduce((a, c) => a + Math.abs(s[c.key + "_usd"]), 0) / 1.2), 1);
   const plan = D.action_plan[0];
-  const fair = [...sc.rows].filter(s => !(s.retire_date && s.retire_date <= CAL[S.b])).sort((a, b) => a.fair_index - b.fair_index).slice(0, 10);
+  // theo a new title at zone par would add per day (the same ranking gold_action_options uses to pick targets)
+  const gainPerDay = s => s.fair_index ? s.theo_usd / s.days_on_floor * (1 / s.fair_index - 1) : 0;
+  const fair = targets.map(id => sc.by[id]).filter(Boolean).sort((a, b) => gainPerDay(b) - gainPerDay(a));
+  const mgrWeak = mgr.filter(s => s.verdict.startsWith("Weak"));
+  const avgGain = rows => rows.length ? sum(rows.map(gainPerDay)) / rows.length : 0;
+  const mgrWeakZones = [...new Set(mgrWeak.map(s => s.zone_name))];
   const full = S.a === 0 && S.b === NDAYS - 1;
   return `
   <div class="hero" id="answer">
     <div class="eyebrow">Floor analytics · The Gilded Ace (fictional) · 300 machines · ${esc(periodLabel())}</div>
     <h1>Luck, location, or a leak?</h1>
-    <p class="verdict-line">The general manager wants to replace the 10 machines that earned the least. Once luck, location, uptime and time on the floor are taken out, the list falls apart: it is mostly the quietest corner of the floor, two machines that are already gone, and one machine paying out more than its paytable allows.</p>
-    <div class="hero-num"><span class="big">${overlap} of 10</span><span class="cap">of the manager's machines would make our replacement list${full ? "" : " for this period"}. The ten that would gain most from a new title are elsewhere.</span></div>
+    <p class="verdict-line">The general manager wants to replace the 10 machines that earned the least. Once luck, location, uptime and time on the floor are taken out, the list changes: two machines are already gone, one is seven weeks old, one pays out more than its paytable allows, and the rest are weak but sit in the quietest corner of the floor, where a new title is worth less than half as much as in a busy zone.</p>
+    <div class="hero-num"><span class="big">${overlap} of 10</span><span class="cap">of the manager's machines would make our replacement list${full ? "" : " for this period"}. The ten that would gain most from a new title are in busier zones.</span></div>
   </div>
   <div class="grid g2">
     <div class="panel">
@@ -502,16 +508,17 @@ function sectionAnswer() {
     </div>
     <div class="panel">
       <h3>What the data says instead</h3>
-      <div class="sub">The ten machines that earn least <i>for their spot</i>: theo (luck-free) against same-zone, same-day peers with equal uptime. 1.00 = par.</div>
+      <div class="sub">Our replacement targets: machines clearly under par <i>for their spot</i> (fair index: theo against same-zone, same-day peers with equal uptime; 1.00 = par) where a new title at par would add the most theo per day.</div>
       <div class="tw"><table>
-        <thead><tr><th>Machine</th><th>Zone</th><th class="n">Fair index</th><th class="n">Demand</th><th class="n">Mgr rank</th></tr></thead>
+        <thead><tr><th>Machine</th><th>Zone</th><th class="n">Fair index</th><th class="n">Demand</th><th class="n">Gain/day at par</th><th class="n">Mgr rank</th></tr></thead>
         <tbody>${fair.map(s => `<tr class="clickable${S.sel === s.machine_id ? " sel" : ""}" data-pick="${s.machine_id}" tabindex="0">
           <td class="mono">${s.machine_id}<div class="small muted">${esc(s.theme)} · RTP ${pct(s.rtp, 0)}</div></td><td>${esc(s.zone_name)}</td>
-          <td class="n">${f2(s.fair_index)}</td><td class="n">${f2(s.demand_index)}</td><td class="n">${s.manager_rank}</td></tr>`).join("")}</tbody>
+          <td class="n">${f2(s.fair_index)}</td><td class="n">${f2(s.demand_index)}</td><td class="n">${fmtUSD(gainPerDay(s))}</td><td class="n">${s.manager_rank}</td></tr>`).join("")}</tbody>
       </table></div>
       <div class="findings">
-        <div class="finding">They are all <b>Royal Draw</b> cabinets set to a 95% payout (5% hold, half the floor's 9.6%), sitting in busy zones. Players use them about as much as their neighbours (demand index ≈ 1.0), so the generous paytable is not buying extra play.</div>
-        <div class="finding">The plan spends <b>${fmtUSD(plan.total_cost_usd)}</b> of the $100,000 and keeps <b>${fmtUSD(plan.budget_kept_usd)}</b>: inspect the leak, lease new titles for the true weak earners, and run one tested promotion. <a href="#plan">See the priced plan</a>.</div>
+        <div class="finding">All ten are <b>Royal Draw</b> cabinets set to a 95% payout (5% hold, half the floor's 9.6%), in busy zones. Players use them about as much as their neighbours (demand index ≈ 1.0), so the generous paytable is not buying extra play.</div>
+        ${mgrWeak.length ? `<div class="finding"><b>${mgrWeak.length}</b> of the manager's ten are weak for their spot too (fair index ${f2(Math.min(...mgrWeak.map(s => s.fair_index)))}–${f2(Math.max(...mgrWeak.map(s => s.fair_index)))}), but they sit in ${esc(mgrWeakZones.join(", "))}: a new title at par there adds about <b>${fmtUSD(avgGain(mgrWeak))}</b> of theo a day, against <b>${fmtUSD(avgGain(fair))}</b> for each of these ten.</div>` : ""}
+        <div class="finding">The plan spends <b>${fmtUSD(plan.total_cost_usd)}</b> of the $100,000 and keeps <b>${fmtUSD(plan.budget_kept_usd)}</b>: inspect the leak, lease new titles where they gain most, and run one tested promotion. <a href="#plan">See the priced plan</a>.</div>
       </div>
     </div>
   </div>`;
@@ -531,7 +538,7 @@ function sectionMachines() {
   <p class="lede">Luck is tested exactly: each spin's payout variance comes from the published game math, so we know how far house win can stray from theo by chance alone. Location is handled by comparing every machine only with machines in the same zone on the same day, per hour it was available.</p></div>
   <div class="grid g4" style="margin-bottom:16px">
     ${tile("Spread of luck scores", f2(zsd), "Standard deviation of luck z across machines; 1.00 is pure chance. The floor behaves like honest dice.")}
-    ${tile("Off spec beyond chance", String(nLeak), "Machines past |z| 3.6 (the cut-off for 310 simultaneous tests) or with hit rates off the paytable.")}
+    ${tile("Off spec beyond chance", String(nLeak), "Hit rate off the paytable (|z| > 6), or house win past luck z −3.6 (the cut-off for 310 simultaneous tests) over 150+ days. Shorter windows use the hit-rate test only: one jackpot can swing a week.")}
     ${tile("Weak earners for their spot", String(sc.rows.filter(s => s.verdict.startsWith("Weak")).length), "Fair index clearly (95% CI) under 0.85 of same-zone par.")}
     ${tile("Typical machine house win", fmtK(sc.typical), "Average per machine over the period, the benchmark every gap is measured from.")}
   </div>
@@ -654,7 +661,7 @@ function machineDetail() {
       <div><h3 style="font-size:1.05rem;margin-bottom:6px">Cumulative house win vs. theo</h3>
         ${legend([{ label: "House win", color: "--s1", line: true }, { label: "Theo with ±2σ luck band", color: "--s2", line: true }])}
         ${lineChart("machine", { x, series: [{ name: "House win", color: "--s1", values: hw, endLabel: true }, { name: "Theo", color: "--s2", values: th, band: [lo, hi], width: 1.5 }], height: 220, label: `Cumulative house win and theo for ${s.machine_id}` })}
-        <p class="small muted" style="margin-top:6px">${s.luck_z < -3.6 || Math.abs(s.hit_rate_z) > 6 ? "House win falls outside what the published game math allows by chance: a reason to inspect the paytable, not proof of wrongdoing." : "House win stays inside the band chance allows: the gap here is not luck."}</p></div>
+        <p class="small muted" style="margin-top:6px">${s.verdict.startsWith("Leak") ? "House win falls outside what the published game math allows by chance: a reason to inspect the paytable, not proof of wrongdoing." : s.luck_z < -3.6 ? "Luck z is past −3.6, but over fewer than 150 days one big jackpot can do that, and the hit rate is within spec: not treated as off spec." : "House win stays inside the band chance allows: the gap here is not luck."}</p></div>
     </div></div>`;
 }
 
@@ -687,7 +694,7 @@ function sectionDemand() {
       ${D.experiments.map(e => `<tr><td>${esc(e.experiment)}<div class="small muted">${esc(e.window_note)}</div></td><td class="n">${spct(e.treated_change)}</td><td class="n">${spct(e.control_change)}</td><td class="n"><b>${spct(e.did_effect)}</b></td></tr>`).join("")}
       </tbody></table></div>
       <div class="findings">
-        <div class="finding">Closing one walkway cut Back Forty play by <b>${spct(-(-D.experiments[0].did_effect), 0)}</b> and its door counter by the same share: its low earnings are a <b>location</b> problem that a new cabinet in the same slot would inherit.</div>
+        <div class="finding">Closing one walkway cut Back Forty play by <b>${spct(-(-D.experiments[0].did_effect), 0)}</b> and its door counter by the same share: the zone's low earnings are largely a <b>location</b> problem, and a new cabinet in the same slot inherits that part of the gap.</div>
         <div class="finding">The eight Aurora Link machines added on Mar 24 run at <b>1.37×</b> par without taking play from their Center Pit neighbours (${spct(D.experiments[2].did_effect)}). New titles can lift a spot.</div>
         <div class="finding">High-Limit's average bet fell from $5.03 to $4.28 after a $5-minimum Platinum Reels was retired on Feb 25 and replaced by a $1 Classic Sevens.</div>
       </div></div>
@@ -803,6 +810,8 @@ function sectionComps() {
 function sectionModel() {
   const fc = D.forecast, x = fc.map(r => String(r.gaming_date).slice(0, 10));
   const p = D.forecast_params[0], met = D.forecast_metrics, selT = D.forecast_selection;
+  const propLifts = D.event_lift.filter(e => e.local_scope === "property").map(e => e.lift);
+  const avgLift = propLifts.length ? sum(propLifts) / propLifts.length : null;
   const hold = met.filter(m => m.period === "holdout May-Jun");
   return `<section id="model">
   <div class="sec-head"><div class="q">Model and validation</div><h2>A daily coin-in forecast, frozen on April 30</h2>
@@ -823,7 +832,7 @@ function sectionModel() {
     ${legend([{ label: "Actual", color: "--s1", line: true }, { label: "Frozen forecast", color: "--s2", line: true }, { label: "Baseline (constant mean)", color: "--muted", line: true }])}
     ${lineChart("forecast", { x, series: [{ name: "Actual", color: "--s1", values: fc.map(r => r.actual_coin_in_usd) }, { name: "Forecast", color: "--s2", values: fc.map(r => r.model_coin_in_usd), band: [fc.map(r => r.split.startsWith("forecast") ? r.lower_80_usd : null), fc.map(r => r.split.startsWith("forecast") ? r.upper_80_usd : null)], width: 1.5 }, { name: "Baseline", color: "--muted", values: fc.map(r => r.baseline_coin_in_usd), width: 1.5 }], bands: [{ from: "2025-04-01", to: "2025-04-30", color: "--rule", label: "validation" }, { from: "2025-05-01", to: "2025-06-30", color: "--brass-wash", label: "holdout" }, { from: "2025-07-01", to: "2025-07-30", color: "--rule", label: "July forecast" }], height: 280, label: "Daily coin-in, forecast vs actual" })}
     <div class="findings">
-      <div class="finding"><b>The decision it changes.</b> On a normal weekend the frozen forecast misses by about ${pct(p.weekend_rmse_pct, 1)}, so a single promotion weekend can only be told apart from noise if it lifts play by ${pct(p.min_detectable_promo_lift, 0)} or more. The Winter Slot Tournament (+18%) would clear that; the Locals Week (+4%) would not. So the plan buys <b>one</b> tournament-style weekend, judges it against this forecast, and buys the second only if it clears ${pct(p.min_detectable_promo_lift, 0)}.</div>
+      <div class="finding"><b>The decision it changes.</b> On a normal weekend the frozen forecast misses by about ${pct(p.weekend_rmse_pct, 1)}, so a single promotion weekend can only be told apart from noise if it lifts play by ${pct(p.min_detectable_promo_lift, 0)} or more. The Winter Slot Tournament (+18%) would clear that; the Locals Week (+4%) would not. So the plan buys <b>one</b> tournament-style weekend, judges it against this forecast, and buys the second only if it clears ${pct(p.min_detectable_promo_lift, 0)}. Be clear about the odds: our base case (the average of the two property promotions, ${pct(avgLift, 0)}) sits right at that bar, so one weekend has roughly even odds of proving a lift that is really there. A result under the bar is reported as inconclusive, not as a failure.</div>
       <div class="finding">The forecast ran high in May–June (bias ${fmtSigned(hold.find(h => h.model === p.chosen_model).bias)} a day): demand softened, in line with June's citywide fall in visitors. July benefit estimates use the recent 8 weeks, not the Jan–Apr level, for this reason.</div>
     </div></div>
   </section>`;
@@ -859,7 +868,7 @@ function sectionPlan() {
       <td><div class="opt-range" data-tip="${esc(tipRows(o.name, [["Low", fmtK(o.benefit_low_usd)], ["Expected", fmtK(o.benefit_base_usd)], ["High", fmtK(o.benefit_high_usd)], ["Cost", fmtK(o.cost_usd)]]))}"><span class="bar-r" style="left:${o.benefit_low_usd / maxV * 100}%;width:${Math.max(0.5, (o.benefit_high_usd - o.benefit_low_usd) / maxV * 100)}%"></span><span class="cost" style="left:${o.cost_usd / maxV * 100}%"></span><span class="base" style="left:${o.benefit_base_usd / maxV * 100}%"></span></div></td>
       <td class="n ${o.net_base_usd >= 0 ? "ok" : ""}">${fmtSigned(o.net_base_usd)}</td><td>${o.recommended ? '<span class="pill">Fund</span>' : '<span class="pill no">Skip</span>'}</td></tr>`).join("")}</tbody></table></div>
     <div class="findings">
-      <div class="finding"><b>Why not the manager's plan?</b> Leasing new titles for the manager's list costs about the same but returns a third as much: two are already retired, one is 49 days old, one is a payout fault a new cabinet would not fix, and the Back Forty six would carry their zone's location drag into the new cabinets.</div>
+      <div class="finding"><b>Why not the manager's plan?</b> Leasing new titles for the manager's list costs about the same but returns a third as much: two are already retired, one is 49 days old, one is a payout fault a new cabinet would not fix. The Back Forty six are weak for their spot too, but a new title only lifts them to Back Forty's par, which is worth less than half what the same lease earns in a busy zone.</div>
       <div class="finding"><b>Runner-up: Back Forty signage.</b> The walkway closure proves Back Forty play follows foot traffic, and signage breaks even at a 2.8% lift. It loses its slot only because its uplift is an assumption, while the promotion's is observed twice.</div>
       <div class="finding"><b>Not funded:</b> an extra grave technician (−$10.6K net) and the Ridgeline sweep (−$3.4K net, no maintenance history to calibrate). The comp pilot is the right next step once the slot frees up.</div>
     </div></div>
@@ -890,7 +899,7 @@ function sectionPipeline() {
     <div class="panel"><h3>Same maths in two places</h3><div class="sub">This page recomputes the scorecard in your browser for whatever period you pick. For the full period it must match the pipeline's gold table.</div>
       <div class="kv"><div><span class="k">Largest gap difference</span><span class="v ${maxGap < 1 ? "ok" : "flag"}">${fmtUSD(maxGap, 2)}</span></div><div><span class="k">Largest fair-index difference</span><span class="v ${maxFi < 1e-6 ? "ok" : "flag"}">${maxFi.toExponential(1)}</span></div><div><span class="k">Verdicts that differ</span><span class="v ${mism === 0 ? "ok" : "flag"}">${mism} of ${full.rows.length}</span></div></div>
       <div class="findings">
-        <div class="finding">Luck test: Var(house win) = Σ bet² × Var(payout ÷ bet), with the variance taken from the published game math, so z = (house win − theo) ÷ √Var. The normal approximation is weakest for Jackpot Summit (very high volatility); its scores are read with that in mind.</div>
+        <div class="finding">Luck test: Var(house win) = Σ bet² × Var(payout ÷ bet), with the variance taken from the published game math, so z = (house win − theo) ÷ √Var. The normal approximation is weakest for Jackpot Summit (very high volatility) and on short windows, where one jackpot skews the sum; so the luck test only flags a machine over 150+ days, while the hit-rate test (binomial, robust on any window) always applies.</div>
         <div class="finding">Fair index: theo ÷ what same-zone machines earned on the same days per available second, with a ratio-estimator 95% interval across days.</div>
       </div></div>
   </div>

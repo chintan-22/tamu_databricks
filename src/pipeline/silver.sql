@@ -7,21 +7,35 @@
 --   * event timestamps are mapped to the 06:00-06:00 gaming day through calendar_day
 --     (handles the 23-hour DST day) instead of assuming 24 h
 --   * meters must balance (house win = coin-in - payout) or the update fails
+--   * meters are never negative and every RTP is a real payback (0.5-1.0), or the update fails
+--   * machine_day is a complete panel (each machine once per gaming day), or the update fails:
+--     a duplicated or missing day would silently change every total downstream
 -- =====================================================================================
 
-CREATE OR REFRESH MATERIALIZED VIEW silver_calendar
-COMMENT 'Gaming days (06:00-06:00 local) with UTC bounds and scheduled seconds.'
+CREATE OR REFRESH MATERIALIZED VIEW silver_calendar (
+  CONSTRAINT complete_machine_panel EXPECT (machine_rows = fleet_size AND machine_keys = fleet_size) ON VIOLATION FAIL UPDATE
+)
+COMMENT 'Gaming days (06:00-06:00 local) with UTC bounds and scheduled seconds, plus a machine_day completeness check.'
 AS SELECT
-  gaming_date,
-  gaming_day_start_utc,
-  gaming_day_end_utc,
-  scheduled_seconds,
-  local_weekday,
-  month,
-  is_weekend,
-  federal_holiday,
-  gaming_date >= DATE'2025-05-01' AS is_holdout
-FROM bronze_calendar_day;
+  cal.gaming_date,
+  cal.gaming_day_start_utc,
+  cal.gaming_day_end_utc,
+  cal.scheduled_seconds,
+  cal.local_weekday,
+  cal.month,
+  cal.is_weekend,
+  cal.federal_holiday,
+  cal.gaming_date >= DATE'2025-05-01' AS is_holdout,
+  -- the release ships one machine_day row per machine per day, on or off the floor
+  COALESCE(p.machine_rows, 0) AS machine_rows,
+  COALESCE(p.machine_keys, 0) AS machine_keys,
+  f.fleet_size
+FROM bronze_calendar_day cal
+LEFT JOIN (
+  SELECT gaming_date, COUNT(*) AS machine_rows, COUNT(DISTINCT machine_id) AS machine_keys
+  FROM bronze_machine_day GROUP BY gaming_date
+) p ON p.gaming_date = cal.gaming_date
+CROSS JOIN (SELECT COUNT(DISTINCT machine_id) AS fleet_size FROM bronze_machine_day) f;
 
 CREATE OR REFRESH MATERIALIZED VIEW silver_locations
 COMMENT 'Slot positions with their bank, zone and coordinates.'
@@ -42,6 +56,8 @@ WHERE s.node_type = 'slot';
 CREATE OR REFRESH MATERIALIZED VIEW silver_machine_day (
   CONSTRAINT machine_on_floor EXPECT (active AND location_id IS NOT NULL) ON VIOLATION DROP ROW,
   CONSTRAINT meters_balance EXPECT (house_win_cents = coin_in_cents - payout_cents) ON VIOLATION FAIL UPDATE,
+  CONSTRAINT meters_nonnegative EXPECT (coin_in_cents >= 0 AND payout_cents >= 0 AND paid_spins >= 0) ON VIOLATION FAIL UPDATE,
+  CONSTRAINT rtp_is_a_payback EXPECT (configured_rtp > 0.5 AND configured_rtp < 1.0) ON VIOLATION FAIL UPDATE,
   CONSTRAINT availability_within_schedule EXPECT (available_seconds BETWEEN 0 AND scheduled_seconds),
   CONSTRAINT occupancy_within_availability EXPECT (occupied_seconds <= available_seconds),
   CONSTRAINT hits_within_spins EXPECT (payout_positive_spins <= paid_spins),
