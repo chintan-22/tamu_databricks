@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    gilded_ace_job:
+      name: gilded-ace-end-to-end
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: data_release_url
+          default: ${var.data_release_url}
+      tasks:
+        - task_key: ingest_raw
+          notebook_task:
+            notebook_path: ../src/notebooks/01_ingest_raw.py
+        - task_key: lakehouse_pipeline
+          depends_on:
+            - task_key: ingest_raw
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.gilded_ace_pipeline.id}
+            full_refresh: false
+        - task_key: train_forecast
+          depends_on:
+            - task_key: lakehouse_pipeline
+          notebook_task:
+            notebook_path: ../src/notebooks/02_train_forecast.py
+        - task_key: export_dashboard
+          depends_on:
+            - task_key: train_forecast
+          notebook_task:
+            notebook_path: ../src/notebooks/03_export_dashboard.py

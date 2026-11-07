@@ -1,0 +1,25 @@
+# Databricks Asset Bundle for "Luck, Location, or a Leak?" (TAMU Datathon 2026)
+# Deploy:  databricks bundle deploy -t dev   &&   databricks bundle run gilded_ace_job -t dev
+bundle:
+  name: gilded-ace-floor-analytics
+
+variables:
+  catalog:
+    description: Unity Catalog catalog to write into (Free Edition ships with `workspace`).
+    default: workspace
+  schema:
+    description: Schema that holds the raw volume and every bronze/silver/gold table.
+    default: gilded_ace
+  data_release_url:
+    description: Where the challenge's Parquet files are downloaded from.
+    default: https://raw.githubusercontent.com/tamu-datathon-org/dashboard-royale/main/data
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+  prod:
+    mode: production

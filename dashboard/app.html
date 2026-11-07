@@ -1,0 +1,953 @@
+<title>Luck, Location, or a Leak?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Floor analytics for The Gilded Ace (fictional): which slot machines are truly underperforming once luck, location and downtime are accounted for, and how to spend $100,000.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a floor-analytics console. Sticky period bar, then the manager's question answered first,
+   then one section per challenge question, each ending in the evidence it hands to the plan. */
+:root {
+  --page: #f4f4f0;          /* felt-free paper, faint green-grey bias */
+  --surface: #fcfcfb;       /* chart surface (validated) */
+  --ink: #0f1412;
+  --ink-2: #4c524e;
+  --muted: #858b86;
+  --rule: #e1e2dc;
+  --axis: #c3c4bc;
+  --brass: #8a5a00;         /* the gilded accent: links, focus, the selected machine */
+  --brass-wash: #f3e7cc;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --good: #0ca30c; --warn: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --good-text: #006300;
+  --div-neg: #e34948; --div-mid: #e6e5e0; --div-pos: #2a78d6;
+  --ring: rgba(15, 20, 18, .10);
+  --font-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Menlo, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0e100f; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8f948f;
+    --rule: #2c2c2a; --axis: #3a3a37; --brass: #e0b25a; --brass-wash: #3a2f19;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --good-text: #0ca30c; --div-neg: #e66767; --div-mid: #383835; --div-pos: #3987e5; --ring: rgba(255,255,255,.10);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0e100f; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8f948f;
+  --rule: #2c2c2a; --axis: #3a3a37; --brass: #e0b25a; --brass-wash: #3a2f19;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --good-text: #0ca30c; --div-neg: #e66767; --div-mid: #383835; --div-pos: #3987e5; --ring: rgba(255,255,255,.10);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 120px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body { background: var(--page); color: var(--ink); font: 400 15px/1.55 var(--font-body); margin: 0; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--brass); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 3px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; line-height: 1.05; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 5vw, 3.6rem); font-weight: 800; }
+h2 { font-size: clamp(1.7rem, 3vw, 2.2rem); }
+h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: .02em; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 11.5px/1.2 var(--font-data); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.num, td.n, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.ink2 { color: var(--ink-2); }
+.small { font-size: 13px; }
+
+/* sticky period bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.bar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-block: 10px; }
+.brand { font: 800 20px/1 var(--font-display); letter-spacing: .03em; white-space: nowrap; }
+.brand span { color: var(--brass); }
+.period { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.period label { font-size: 12px; color: var(--ink-2); }
+input[type=date], select { font: 500 13px var(--font-data); color: var(--ink); background: var(--page); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 7px; min-height: 32px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 12.5px var(--font-body); color: var(--ink); background: var(--page); border: 1px solid var(--rule); border-radius: 999px; padding: 5px 11px; cursor: pointer; min-height: 30px; }
+button:hover { border-color: var(--axis); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.nav { display: flex; gap: 4px 14px; flex-wrap: wrap; font-size: 13px; margin-left: auto; }
+.nav a { color: var(--ink-2); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
+.nav a:hover { color: var(--ink); border-color: var(--brass); }
+.theme-btn { border-radius: 4px; }
+
+/* sections */
+section { padding-block: 44px 8px; }
+.sec-head { display: grid; gap: 8px; margin-bottom: 18px; }
+.sec-head .q { font: 500 12px var(--font-data); color: var(--brass); letter-spacing: .1em; text-transform: uppercase; }
+.lede { font-size: 16.5px; color: var(--ink-2); max-width: 74ch; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.panel > h3 { margin-bottom: 4px; }
+.panel > .sub { font-size: 13px; color: var(--ink-2); margin-bottom: 12px; }
+.finding { border-left: 3px solid var(--brass); padding: 2px 0 2px 12px; font-size: 14.5px; }
+.finding b { font-weight: 600; }
+.findings { display: grid; gap: 10px; margin-top: 14px; }
+.src { font: 400 11.5px var(--font-data); color: var(--muted); margin-top: 10px; }
+
+/* hero */
+.hero { padding-block: 40px 10px; display: grid; gap: 22px; }
+.hero .verdict-line { font-size: clamp(17px, 2vw, 20px); color: var(--ink-2); max-width: 62ch; }
+.hero-num { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.hero-num .big { font: 800 clamp(64px, 9vw, 104px)/.9 var(--font-display); color: var(--ink); }
+.hero-num .cap { font-size: 16px; color: var(--ink-2); max-width: 34ch; }
+.tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.tile .l { font-size: 12.5px; color: var(--ink-2); }
+.tile .v { font: 600 24px/1.1 var(--font-body); }
+.tile .d { font-size: 12px; color: var(--muted); }
+
+/* tables */
+.tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { font: 500 11.5px var(--font-data); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+th.n, td.n { text-align: right; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--brass-wash); }
+tr.sel td { background: var(--brass-wash); }
+th button.sort { all: unset; cursor: pointer; }
+th button.sort:focus-visible { outline: 2px solid var(--brass); }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; white-space: nowrap; padding: 2px 8px 2px 6px; border-radius: 999px; background: var(--page); border: 1px solid var(--rule); }
+td .chip { white-space: normal; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
+.chip.leak { border-color: var(--critical); }
+.chip.leak svg { flex: none; }
+.pill { font: 500 11px var(--font-data); letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: var(--ink); color: var(--surface); }
+.pill.no { background: transparent; color: var(--muted); border: 1px solid var(--rule); }
+
+/* legend */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key-line { width: 14px; height: 2px; display: inline-block; border-radius: 1px; }
+
+/* charts */
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--muted); font: 400 11px var(--font-data); }
+.chart .lbl { fill: var(--ink-2); font: 500 11px var(--font-body); }
+.grid-line { stroke: var(--rule); stroke-width: 1; }
+.axis-line { stroke: var(--axis); stroke-width: 1; }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); box-shadow: 0 6px 24px rgba(0,0,0,.16); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; max-width: 280px; display: none; }
+.tip b { font-weight: 600; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* horizontal bars */
+.hbars { display: grid; gap: 7px; }
+.hb { display: grid; grid-template-columns: minmax(90px, 32%) 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.hb .track { position: relative; height: 14px; }
+.hb .fill { position: absolute; top: 1px; height: 12px; border-radius: 0 4px 4px 0; }
+.hb .fill.neg { border-radius: 4px 0 0 4px; }
+.hb .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--axis); }
+.hb .val { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 12.5px; min-width: 70px; text-align: right; }
+
+/* decomposition mini bar (diverging stacked) */
+.mini { position: relative; height: 12px; min-width: 160px; }
+.mini .seg { position: absolute; top: 0; height: 12px; }
+.mini .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--ink-2); }
+
+/* segmented bar */
+.segbar { display: flex; gap: 2px; height: 28px; }
+.segbar > div { border-radius: 4px; color: #fff; font: 600 12px/28px var(--font-body); padding-left: 7px; white-space: nowrap; overflow: hidden; min-width: 2px; }
+.segbar > div.dark-ink { color: #0b0b0b; }
+
+/* machine detail */
+.detail { display: grid; gap: 14px; }
+.detail .head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+.detail .mid { font: 800 30px/1 var(--font-display); }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 10px; }
+.kv div { display: grid; gap: 2px; }
+.kv .k { font-size: 12px; color: var(--ink-2); }
+.kv .v { font: 500 16px var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* plan */
+.opt-range { position: relative; height: 18px; min-width: 180px; }
+.opt-range .bar-r { position: absolute; top: 7px; height: 4px; border-radius: 2px; background: var(--s1); opacity: .35; }
+.opt-range .base { position: absolute; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--s1); box-shadow: 0 0 0 2px var(--surface); margin-left: -5px; }
+.opt-range .cost { position: absolute; top: 0; height: 18px; width: 2px; background: var(--ink); margin-left: -1px; }
+details { border-top: 1px solid var(--rule); padding-block: 8px; }
+details summary { cursor: pointer; font-size: 13px; color: var(--ink-2); }
+details[open] summary { margin-bottom: 8px; }
+.steps { display: grid; gap: 10px; counter-reset: step; padding: 0; margin: 0; list-style: none; }
+.steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-size: 14px; }
+.steps li::before { counter-increment: step; content: counter(step); font: 600 13px/26px var(--font-data); text-align: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--axis); color: var(--ink-2); }
+
+/* lineage */
+.lineage { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.layer { border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px; background: var(--surface); }
+.layer h4 { margin: 0 0 6px; font: 600 13px var(--font-data); text-transform: uppercase; letter-spacing: .08em; }
+.layer ul { margin: 0; padding-left: 16px; font: 400 12px/1.6 var(--font-data); color: var(--ink-2); }
+footer { padding-block: 40px 60px; color: var(--muted); font-size: 12.5px; }
+.loading { padding: 80px 0; text-align: center; color: var(--muted); }
+.ok { color: var(--good-text); font-weight: 600; }
+.flag { color: var(--critical); font-weight: 600; }
+@media (max-width: 720px) {
+  .nav { display: none; }
+  .hb { grid-template-columns: minmax(80px, 38%) 1fr auto; }
+}
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="brand">THE GILDED <span>ACE</span></div>
+    <div class="period" role="group" aria-label="Analysis period">
+      <label for="p-start">From</label><input type="date" id="p-start">
+      <label for="p-end">to</label><input type="date" id="p-end">
+      <div class="chips" id="presets"></div>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#answer">Answer</a><a href="#machines">Machines</a><a href="#demand">Demand</a><a href="#downtime">Downtime</a>
+      <a href="#players">Players</a><a href="#comps">Comps</a><a href="#model">Model</a><a href="#plan">Plan</a><a href="#pipeline">Pipeline</a>
+    </nav>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+</div>
+
+<main class="wrap" id="app"><div class="loading">Loading the floor data…</div></main>
+<div class="tip" id="tip" role="status"></div>
+
+<script>
+"use strict";
+/* ============================== utilities ============================== */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtUSD = (v, d = 0) => v == null || isNaN(v) ? "–" : (v < 0 ? "−$" : "$") + Math.abs(v).toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+const fmtK = v => { if (v == null || isNaN(v)) return "–"; const a = Math.abs(v), s = v < 0 ? "−" : ""; if (a >= 1e6) return s + "$" + (a / 1e6).toFixed(a >= 1e7 ? 1 : 2) + "M"; if (a >= 1e3) return s + "$" + (a / 1e3).toFixed(a >= 1e5 ? 0 : 1) + "K"; return s + "$" + a.toFixed(0); };
+const fmtSigned = v => (v > 0 ? "+" : "") + fmtK(v);
+const pct = (v, d = 1) => v == null || isNaN(v) ? "–" : (v * 100).toFixed(d) + "%";
+const spct = (v, d = 1) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v * 100).toFixed(d) + "%";
+const n0 = v => v == null || isNaN(v) ? "–" : Math.round(v).toLocaleString("en-US");
+const f2 = v => v == null || isNaN(v) ? "–" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+const sum = a => a.reduce((s, x) => s + (x || 0), 0);
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
+const monthLabel = m => MONTHS[+m.slice(5, 7) - 1] + " " + m.slice(0, 4);
+const shortDate = iso => { const [y, m, d] = iso.split("-"); return MONTHS[+m - 1] + " " + (+d); };
+
+/* fixed colour assignment: the six explanations always wear the same slot */
+const CAUSES = [
+  { key: "luck", label: "Luck", color: "--s1" },
+  { key: "location", label: "Location", color: "--s2" },
+  { key: "downtime", label: "Downtime", color: "--s3" },
+  { key: "appeal", label: "Game appeal", color: "--s4" },
+  { key: "hold_setting", label: "Hold setting", color: "--s5" },
+  { key: "exposure", label: "Time on floor", color: "--s6" },
+];
+const VERDICT_STYLE = {
+  "Leak? Inspect payout": { color: "--critical", leak: true },
+  "Already retired": { color: "--s6" },
+  "New install (short exposure)": { color: "--s6" },
+  "Weak earner: low-hold game": { color: "--s5" },
+  "Weak earner: low play": { color: "--s4" },
+  "Unlucky": { color: "--s1" },
+  "Quiet location": { color: "--s2" },
+  "Downtime": { color: "--s3" },
+  "At or near par": { color: "--axis" },
+};
+const warnIcon = '<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 11.5 11h-11z" fill="var(--critical)"/><rect x="5.3" y="4.4" width="1.4" height="3.6" fill="#fff"/><rect x="5.3" y="8.8" width="1.4" height="1.3" fill="#fff"/></svg>';
+function verdictChip(v) {
+  const st = VERDICT_STYLE[v] || { color: "--axis" };
+  return `<span class="chip${st.leak ? " leak" : ""}">${st.leak ? warnIcon : `<span class="dot" style="background:var(${st.color})"></span>`}${esc(v)}</span>`;
+}
+
+/* ============================== tooltip ============================== */
+const tip = $("#tip");
+function showTip(html, x, y) {
+  tip.innerHTML = html; tip.style.display = "block";
+  const r = tip.getBoundingClientRect();
+  let left = x + 14, top = y + 14;
+  if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = y - r.height - 14;
+  tip.style.left = Math.max(8, left) + "px"; tip.style.top = Math.max(8, top) + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+document.addEventListener("pointerover", e => { const t = e.target.closest("[data-tip]"); if (t) showTip(t.dataset.tip, e.clientX, e.clientY); });
+document.addEventListener("pointermove", e => { const t = e.target.closest("[data-tip]"); if (t) showTip(t.dataset.tip, e.clientX, e.clientY); });
+document.addEventListener("pointerout", e => { if (e.target.closest("[data-tip]")) hideTip(); });
+document.addEventListener("scroll", hideTip, { passive: true });
+const tipRows = (title, rows) => `<b>${esc(title)}</b>` + rows.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span>${v}</span></div>`).join("");
+
+/* ============================== SVG chart kit ============================== */
+function niceTicks(min, max, count = 4) {
+  if (min === max) { max = min + 1; }
+  const span = max - min, step0 = span / count, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= count) || 10 * mag;
+  const ticks = []; for (let v = Math.ceil(min / step) * step; v <= max + 1e-9; v += step) ticks.push(+v.toFixed(10));
+  return ticks;
+}
+const lineRegistry = {};
+/* line chart: x is an array of ISO dates; series [{name, color, values, width, band:[lo,hi]}]; bands = shaded date ranges */
+function lineChart(id, { x, series, yfmt = fmtK, height = 240, bands = [], yMin = null, marks = [], label = "" }) {
+  const W = 760, H = height, L = 56, R = 16, T = 22, B = 26;
+  const all = series.flatMap(s => [...s.values, ...(s.band ? [...s.band[0], ...s.band[1]] : [])]).filter(v => v != null && !isNaN(v));
+  let lo = yMin ?? Math.min(...all), hi = Math.max(...all);
+  const pad = (hi - lo) * 0.08; if (yMin == null) lo -= pad; hi += pad;
+  const ticks = niceTicks(lo, hi, 4); lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const n = x.length, sx = i => L + (n === 1 ? 0 : i / (n - 1)) * (W - L - R), sy = v => T + (1 - (v - lo) / (hi - lo || 1)) * (H - T - B);
+  let g = "";
+  bands.forEach(b => {
+    const i0 = x.indexOf(b.from), i1 = x.indexOf(b.to);
+    if (i0 < 0 && i1 < 0) return;
+    const a0 = sx(Math.max(0, i0 < 0 ? 0 : i0)) - (n > 1 ? (W - L - R) / (n - 1) / 2 : 0), a1 = sx(i1 < 0 ? n - 1 : i1) + (n > 1 ? (W - L - R) / (n - 1) / 2 : 0);
+    g += `<rect x="${Math.max(L, a0).toFixed(1)}" y="${T}" width="${Math.max(1, Math.min(W - R, a1) - Math.max(L, a0)).toFixed(1)}" height="${H - T - B}" fill="var(${b.color || "--brass-wash"})" opacity="${b.opacity ?? 0.7}"/>`;
+    if (b.label) g += `<text x="${(Math.max(L, a0) + 3).toFixed(1)}" y="${T - 6}" class="lbl">${esc(b.label)}</text>`;
+  });
+  ticks.forEach(t => { const y = sy(t).toFixed(1); g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 8}" y="${+y + 4}" text-anchor="end">${esc(yfmt(t))}</text>`; });
+  g += `<line class="axis-line" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+  // month ticks
+  let lastM = "";
+  x.forEach((d, i) => { const m = d.slice(0, 7); if (m !== lastM) { lastM = m; const xx = sx(i).toFixed(1); g += `<line class="axis-line" x1="${xx}" x2="${xx}" y1="${H - B}" y2="${H - B + 4}"/><text x="${xx}" y="${H - 8}" text-anchor="start">${MONTHS[+d.slice(5, 7) - 1]}</text>`; } });
+  series.forEach(s => {
+    if (s.band) {
+      let top = "", bot = "";
+      s.band[1].forEach((v, i) => { if (v != null) top += `${top ? "L" : "M"}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`; });
+      for (let i = s.band[0].length - 1; i >= 0; i--) { const v = s.band[0][i]; if (v != null) bot += `L${sx(i).toFixed(1)},${sy(v).toFixed(1)}`; }
+      if (top) g += `<path d="${top}${bot}Z" fill="var(${s.color})" opacity=".12" stroke="none"/>`;
+    }
+    let d = "", pen = false;
+    s.values.forEach((v, i) => { if (v == null || isNaN(v)) { pen = false; return; } d += `${pen ? "L" : "M"}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`; pen = true; });
+    g += `<path d="${d}" fill="none" stroke="var(${s.color})" stroke-width="${s.width || 2}" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ""}/>`;
+    if (s.endLabel) { let i = s.values.length - 1; while (i > 0 && (s.values[i] == null)) i--; g += `<circle cx="${sx(i).toFixed(1)}" cy="${sy(s.values[i]).toFixed(1)}" r="4" fill="var(${s.color})" stroke="var(--surface)" stroke-width="2"/>`; }
+  });
+  marks.forEach(m => { const i = x.indexOf(m.date); if (i < 0) return; const xx = sx(i).toFixed(1); g += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - B}" stroke="var(--ink-2)" stroke-width="1"/><text x="${+xx + 4}" y="${T + 10}" class="lbl">${esc(m.label)}</text>`; });
+  g += `<line class="xhair" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--ink-2)" stroke-width="1" visibility="hidden"/>`;
+  series.forEach((s, k) => { g += `<circle class="xdot" data-k="${k}" r="4" fill="var(${s.color})" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`; });
+  g += `<rect class="hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/>`;
+  lineRegistry[id] = { x, series, sx, sy, W, L, R, yfmt };
+  return `<div class="chart" data-line="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}</svg></div>`;
+}
+document.addEventListener("pointermove", e => {
+  const c = e.target.closest("[data-line]"); if (!c) return;
+  const reg = lineRegistry[c.dataset.line]; if (!reg) return;
+  const svg = c.querySelector("svg"), r = svg.getBoundingClientRect();
+  const vx = (e.clientX - r.left) / r.width * reg.W;
+  const n = reg.x.length; let i = Math.round((vx - reg.L) / (reg.W - reg.L - reg.R) * (n - 1)); i = Math.max(0, Math.min(n - 1, i));
+  const xh = svg.querySelector(".xhair"); xh.setAttribute("x1", reg.sx(i)); xh.setAttribute("x2", reg.sx(i)); xh.setAttribute("visibility", "visible");
+  svg.querySelectorAll(".xdot").forEach(d => { const s = reg.series[+d.dataset.k], v = s.values[i]; if (v == null || isNaN(v)) { d.setAttribute("visibility", "hidden"); return; } d.setAttribute("cx", reg.sx(i)); d.setAttribute("cy", reg.sy(v)); d.setAttribute("visibility", "visible"); });
+  const rows = reg.series.filter(s => !s.noTip).map(s => [s.name, s.values[i] == null ? "–" : reg.yfmt(s.values[i])]);
+  showTip(tipRows(new Date(reg.x[i] + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), rows), e.clientX, e.clientY);
+});
+document.addEventListener("pointerout", e => { const c = e.target.closest("[data-line]"); if (c && !c.contains(e.relatedTarget)) { c.querySelectorAll(".xhair,.xdot").forEach(el => el.setAttribute("visibility", "hidden")); hideTip(); } });
+
+function legend(items) { return `<div class="legend">${items.map(i => `<span><span class="${i.line ? "key-line" : "dot"}" style="background:var(${i.color})"></span>${esc(i.label)}</span>`).join("")}</div>`; }
+
+/* horizontal bars, single series or diverging around zero */
+function hbars(rows, { fmt = fmtK, color = "--s1", colorOf = null, max = null } = {}) {
+  const vals = rows.map(r => r.value), mx = max ?? Math.max(...vals.map(Math.abs), 1e-9);
+  const hasNeg = vals.some(v => v < 0), zero = hasNeg ? 50 : 0, span = hasNeg ? 50 : 100;
+  return `<div class="hbars">${rows.map(r => {
+    const w = Math.abs(r.value) / mx * span, c = colorOf ? colorOf(r) : color;
+    const left = r.value < 0 ? zero - w : zero;
+    return `<div class="hb" data-tip="${esc(r.tip || `<b>${esc(r.label)}</b><div class="row"><span>value</span><span>${fmt(r.value)}</span></div>`)}"><span>${r.labelHtml || esc(r.label)}</span><span class="track">${hasNeg ? `<span class="zero" style="left:${zero}%"></span>` : ""}<span class="fill${r.value < 0 ? " neg" : ""}" style="left:${left}%;width:${Math.max(w, 0.4)}%;background:var(${c})"></span></span><span class="val">${fmt(r.value)}</span></div>`;
+  }).join("")}</div>`;
+}
+
+/* diverging stacked mini bar of the six components */
+function miniDecomp(s, scale) {
+  let pos = 50, neg = 50, html = `<span class="zero" style="left:50%"></span>`;
+  const tipHtml = tipRows(s.machine_id + " — gap vs. a typical machine " + fmtSigned(s.gap_usd), CAUSES.map(c => [c.label, fmtSigned(s[c.key + "_usd"])]));
+  CAUSES.forEach(c => {
+    const v = s[c.key + "_usd"], w = Math.abs(v) / scale * 50; if (w < 0.15) return;
+    if (v >= 0) { html += `<span class="seg" style="left:${pos}%;width:${w}%;background:var(${c.color})"></span>`; pos += w + 0.3; }
+    else { neg -= w; html += `<span class="seg" style="left:${neg}%;width:${w}%;background:var(${c.color})"></span>`; neg -= 0.3; }
+  });
+  return `<div class="mini" data-tip="${esc(tipHtml)}" aria-label="decomposition">${html}</div>`;
+}
+
+/* ============================== state & data ============================== */
+let D, CAL, NDAYS, sc = null;
+const S = { a: 0, b: 180, zone: "all", bank: "all", sel: "M-1158", sort: "fair_index", asc: true, showAll: false, tier: "all", age: "all", region: "all" };
+
+function prep() {
+  CAL = D.calendar.gaming_date.map(d => String(d).slice(0, 10)); NDAYS = CAL.length;
+  const M = D.machines, L = D.locations, md = D.machine_day;
+  D.zones = [...new Set(L.zone_id)].sort();
+  D.zoneName = {}; L.zone_id.forEach((z, i) => D.zoneName[z] = L.zone_name[i]);
+  D.locZone = L.zone_id.map(z => D.zones.indexOf(z));
+  D.rtp = M.rtp; D.rows = md.m.length;
+  D.byMachine = M.machine_id.map(() => []);
+  for (let r = 0; r < D.rows; r++) D.byMachine[md.m[r]].push(r);
+  D.mIndex = {}; M.machine_id.forEach((id, i) => D.mIndex[id] = i);
+  D.sqlScore = {}; D.scorecard.forEach(s => D.sqlScore[s.machine_id] = s);
+}
+
+/* The whole scorecard, recomputed in the browser for the chosen period. Same maths as
+   src/pipeline/gold_machines.sql; for the full period the two agree (see Pipeline section). */
+function computeScorecard(a, b) {
+  const md = D.machine_day, M = D.machines, L = D.locations, nZ = D.zones.length, nD = b - a + 1;
+  const zk = (z, d) => z * NDAYS + d;
+  const Z = { n: new Float64Array(nZ * NDAYS), ci: new Float64Array(nZ * NDAYS), th: new Float64Array(nZ * NDAYS), av: new Float64Array(nZ * NDAYS), sc: new Float64Array(nZ * NDAYS), dn: new Float64Array(nZ * NDAYS) };
+  const Fn = new Float64Array(NDAYS), Fth = new Float64Array(NDAYS);
+  const nM = M.machine_id.length, mci = new Float64Array(nM), mav = new Float64Array(nM);
+  let floorHW = 0, floorRows = 0;
+  for (let r = 0; r < D.rows; r++) {
+    const d = md.d[r]; if (d < a || d > b) continue;
+    const m = md.m[r], z = D.locZone[md.l[r]], k = zk(z, d), ci = md.ci[r], th = ci * (1 - D.rtp[m]);
+    Z.n[k]++; Z.ci[k] += ci; Z.th[k] += th; Z.av[k] += md.av[r]; Z.sc[k] += md.av[r] + md.dn[r]; Z.dn[k] += md.dn[r];
+    Fn[d]++; Fth[d] += th; floorHW += md.hw[r]; floorRows++; mci[m] += ci; mav[m] += md.av[r];
+  }
+  const Hf = floorRows ? floorHW / floorRows : 0;
+  const out = [];
+  for (let m = 0; m < nM; m++) {
+    const rows = D.byMachine[m].filter(r => md.d[r] >= a && md.d[r] <= b);
+    if (!rows.length) continue;
+    const rate = mav[m] ? mci[m] / mav[m] : 0;
+    let hw = 0, th = 0, ci = 0, vr = 0, sp = 0, hi = 0, av = 0, dn = 0, oc = 0, f = 0;
+    let luck = 0, loc = 0, hold = 0, down = 0, appeal = 0, fth = 0, exp = 0, expCi = 0;
+    const thArr = [], expArr = [];
+    let lastL = md.l[rows[rows.length - 1]];
+    const zonesSeen = new Set();
+    for (const r of rows) {
+      const d = md.d[r], z = D.locZone[md.l[r]], k = zk(z, d);
+      const c = md.ci[r], t = c * (1 - D.rtp[m]), hz = Z.ci[k] ? Z.th[k] / Z.ci[k] : 0;
+      const excess = md.dn[r] - (md.av[r] + md.dn[r]) * (Z.sc[k] ? Z.dn[k] / Z.sc[k] : 0);
+      hw += md.hw[r]; th += t; ci += c; vr += md.vr[r]; sp += md.sp[r]; hi += md.hi[r]; av += md.av[r]; dn += md.dn[r]; oc += md.oc[r]; f += md.f[r];
+      luck += md.hw[r] - t;
+      loc += Z.th[k] / Z.n[k] - Fth[d] / Fn[d];
+      hold += t - c * hz;
+      down += -excess * rate * hz;
+      appeal += (c - Z.ci[k] / Z.n[k]) * hz + excess * rate * hz;
+      fth += Fth[d] / Fn[d];
+      const e = Z.av[k] ? md.av[r] * Z.th[k] / Z.av[k] : 0; exp += e; thArr.push(t); expArr.push(e);
+      expCi += Z.av[k] ? md.av[r] * Z.ci[k] / Z.av[k] : 0;
+      zonesSeen.add(z);
+    }
+    const fi = exp ? th / exp : null;
+    let ss = 0; for (let i = 0; i < thArr.length; i++) { const res = thArr[i] - expArr[i] * fi; ss += res * res; }
+    const nn = thArr.length, se = nn > 1 && exp ? Math.sqrt(ss / (nn - 1)) / ((exp / nn) * Math.sqrt(nn)) : null;
+    const p = M.spec_hit[m];
+    const rec = {
+      machine_id: M.machine_id[m], m, theme: M.theme[m], manufacturer: M.manufacturer[m], lease_class: M.lease_class[m],
+      retire_date: M.retire_date[m], install_date: M.install_date[m], rtp: D.rtp[m], volatility_class: M.volatility_class[m],
+      location_id: L.location_id[lastL], bank_id: L.bank_id[lastL], zone_id: L.zone_id[lastL], zone_name: L.zone_name[lastL], x: L.x_m[lastL], y: L.y_m[lastL],
+      days_on_floor: nn, house_win_usd: hw / 100, theo_usd: th / 100, coin_in_usd: ci / 100,
+      observed_hold: ci ? hw / ci : null, theo_hold: 1 - D.rtp[m],
+      luck_usd: luck / 100, location_usd: loc / 100, hold_setting_usd: hold / 100, downtime_usd: down / 100, appeal_usd: appeal / 100,
+      exposure_usd: fth / 100 - nD * Hf / 100, gap_usd: hw / 100 - nD * Hf / 100, typical_usd: nD * Hf / 100,
+      luck_z: vr ? (hw - th) / Math.sqrt(vr) : null,
+      hit_rate_z: sp ? (hi - sp * p) / Math.sqrt(sp * p * (1 - p)) : null, observed_hit_rate: sp ? hi / sp : null, spec_hit: p,
+      fair_index: fi, fair_index_se: se, demand_index: expCi ? ci / expCi : null,
+      availability: (av + dn) ? av / (av + dn) : null, occupancy: av ? oc / av : null, downtime_hours: dn / 3600, faults: f,
+      luck_sd_usd: Math.sqrt(vr) / 100, zones_occupied: zonesSeen.size,
+    };
+    rec.verdict = verdictOf(rec, nD, CAL[b]);
+    out.push(rec);
+  }
+  const byHW = [...out].sort((x, y) => x.house_win_usd - y.house_win_usd); byHW.forEach((s, i) => s.manager_rank = i + 1);
+  const byFI = [...out].sort((x, y) => x.fair_index - y.fair_index); byFI.forEach((s, i) => s.fair_rank = i + 1);
+  return { rows: out, nDays: nD, typical: nD * Hf / 100, by: Object.fromEntries(out.map(s => [s.machine_id, s])) };
+}
+function verdictOf(s, nD, endDate) {
+  const hiCI = s.fair_index + 1.96 * (s.fair_index_se || 0);
+  if (Math.abs(s.hit_rate_z) > 6 || s.luck_z < -3.6) return "Leak? Inspect payout";
+  if (s.retire_date && s.retire_date <= endDate) return "Already retired";
+  if (s.days_on_floor < 150 * nD / 181) return "New install (short exposure)";
+  if (hiCI < 0.85 && s.hold_setting_usd < s.appeal_usd) return "Weak earner: low-hold game";
+  if (hiCI < 0.85) return "Weak earner: low play";
+  if (s.luck_usd < 0 && s.luck_usd <= Math.min(s.location_usd, s.downtime_usd, s.appeal_usd, s.hold_setting_usd)) return "Unlucky";
+  if (s.location_usd < 0 && s.location_usd <= Math.min(s.downtime_usd, s.appeal_usd, s.hold_setting_usd)) return "Quiet location";
+  if (s.downtime_usd < 0 && s.downtime_usd <= Math.min(s.appeal_usd, s.hold_setting_usd)) return "Downtime";
+  return "At or near par";
+}
+const inPeriod = iso => iso >= CAL[S.a] && iso <= CAL[S.b];
+const monthsInPeriod = () => { const a = CAL[S.a].slice(0, 7), b = CAL[S.b].slice(0, 7); return [...new Set(CAL.map(d => d.slice(0, 7)))].filter(m => m >= a && m <= b); };
+const periodLabel = () => `${shortDate(CAL[S.a])} – ${shortDate(CAL[S.b])} 2025 (${S.b - S.a + 1} gaming days)`;
+const replaceTargets = () => (D.action_options.find(o => o.action_type_id === "A-REPLACE-LEASE")?.targets || "").split(", ").filter(Boolean);
+
+/* ============================== sections ============================== */
+function sectionAnswer() {
+  const mgr = sc.rows.filter(s => s.manager_rank <= 10).sort((a, b) => a.manager_rank - b.manager_rank);
+  const targets = replaceTargets();
+  const overlap = mgr.filter(s => targets.includes(s.machine_id)).length;
+  const counts = {}; mgr.forEach(s => counts[s.verdict] = (counts[s.verdict] || 0) + 1);
+  const scale = Math.max(...mgr.map(s => CAUSES.reduce((a, c) => a + Math.abs(s[c.key + "_usd"]), 0) / 1.2), 1);
+  const plan = D.action_plan[0];
+  const fair = [...sc.rows].filter(s => !(s.retire_date && s.retire_date <= CAL[S.b])).sort((a, b) => a.fair_index - b.fair_index).slice(0, 10);
+  const full = S.a === 0 && S.b === NDAYS - 1;
+  return `
+  <div class="hero" id="answer">
+    <div class="eyebrow">Floor analytics · The Gilded Ace (fictional) · 300 machines · ${esc(periodLabel())}</div>
+    <h1>Luck, location, or a leak?</h1>
+    <p class="verdict-line">The general manager wants to replace the 10 machines that earned the least. Once luck, location, uptime and time on the floor are taken out, the list falls apart: it is mostly the quietest corner of the floor, two machines that are already gone, and one machine paying out more than its paytable allows.</p>
+    <div class="hero-num"><span class="big">${overlap} of 10</span><span class="cap">of the manager's machines would make our replacement list${full ? "" : " for this period"}. The ten that would gain most from a new title are elsewhere.</span></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <h3>The manager's bottom 10, explained</h3>
+      <div class="sub">Ranked by raw house win, ${esc(periodLabel())}. Each bar splits the gap to a typical machine (${fmtK(sc.typical)}) into the six explanations; left of the line costs money.</div>
+      ${legend(CAUSES.map(c => ({ label: c.label, color: c.color })))}
+      <div class="tw"><table>
+        <thead><tr><th class="n">#</th><th>Machine</th><th>Zone</th><th class="n">House win</th><th>Why it ranks low</th><th>Verdict</th></tr></thead>
+        <tbody>${mgr.map(s => `<tr class="clickable${S.sel === s.machine_id ? " sel" : ""}" data-pick="${s.machine_id}" tabindex="0">
+          <td class="n">${s.manager_rank}</td><td class="mono">${s.machine_id}<div class="small muted">${esc(s.theme)}</div></td><td>${esc(s.zone_name)}</td>
+          <td class="n">${fmtK(s.house_win_usd)}</td><td>${miniDecomp(s, scale)}</td><td>${verdictChip(s.verdict)}</td></tr>`).join("")}</tbody>
+      </table></div>
+      <div class="findings">${Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([v, n]) => `<div class="finding"><b>${n}</b> × ${esc(v)}</div>`).join("")}</div>
+    </div>
+    <div class="panel">
+      <h3>What the data says instead</h3>
+      <div class="sub">The ten machines that earn least <i>for their spot</i>: theo (luck-free) against same-zone, same-day peers with equal uptime. 1.00 = par.</div>
+      <div class="tw"><table>
+        <thead><tr><th>Machine</th><th>Zone</th><th class="n">Fair index</th><th class="n">Demand</th><th class="n">Mgr rank</th></tr></thead>
+        <tbody>${fair.map(s => `<tr class="clickable${S.sel === s.machine_id ? " sel" : ""}" data-pick="${s.machine_id}" tabindex="0">
+          <td class="mono">${s.machine_id}<div class="small muted">${esc(s.theme)} · RTP ${pct(s.rtp, 0)}</div></td><td>${esc(s.zone_name)}</td>
+          <td class="n">${f2(s.fair_index)}</td><td class="n">${f2(s.demand_index)}</td><td class="n">${s.manager_rank}</td></tr>`).join("")}</tbody>
+      </table></div>
+      <div class="findings">
+        <div class="finding">They are all <b>Royal Draw</b> cabinets set to a 95% payout (5% hold, half the floor's 9.6%), sitting in busy zones. Players use them about as much as their neighbours (demand index ≈ 1.0), so the generous paytable is not buying extra play.</div>
+        <div class="finding">The plan spends <b>${fmtUSD(plan.total_cost_usd)}</b> of the $100,000 and keeps <b>${fmtUSD(plan.budget_kept_usd)}</b>: inspect the leak, lease new titles for the true weak earners, and run one tested promotion. <a href="#plan">See the priced plan</a>.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function sectionMachines() {
+  const z = S.zone, bk = S.bank;
+  const rows = sc.rows.filter(s => (z === "all" || s.zone_id === z) && (bk === "all" || s.bank_id === bk));
+  const banks = [...new Set(sc.rows.filter(s => z === "all" || s.zone_id === z).map(s => s.bank_id))].sort();
+  const sorted = [...rows].sort((a, b) => { const va = a[S.sort], vb = b[S.sort]; const c = (typeof va === "string" ? va.localeCompare(vb) : (va ?? -1e18) - (vb ?? -1e18)); return S.asc ? c : -c; });
+  const shown = S.showAll ? sorted : sorted.slice(0, 15);
+  const nLeak = sc.rows.filter(s => s.verdict.startsWith("Leak")).length;
+  const zsd = Math.sqrt(sum(sc.rows.filter(s => s.luck_z != null).map(s => s.luck_z ** 2)) / sc.rows.length);
+  const col = (k, label, n = true) => `<th class="${n ? "n" : ""}"><button class="sort" data-sort="${k}">${label}${S.sort === k ? (S.asc ? " ↑" : " ↓") : ""}</button></th>`;
+  return `<section id="machines">
+  <div class="sec-head"><div class="q">Question 1 · Which machines are truly underperforming?</div><h2>Separate the machine from its luck and its spot</h2>
+  <p class="lede">Luck is tested exactly: each spin's payout variance comes from the published game math, so we know how far house win can stray from theo by chance alone. Location is handled by comparing every machine only with machines in the same zone on the same day, per hour it was available.</p></div>
+  <div class="grid g4" style="margin-bottom:16px">
+    ${tile("Spread of luck scores", f2(zsd), "Standard deviation of luck z across machines; 1.00 is pure chance. The floor behaves like honest dice.")}
+    ${tile("Off spec beyond chance", String(nLeak), "Machines past |z| 3.6 (the cut-off for 310 simultaneous tests) or with hit rates off the paytable.")}
+    ${tile("Weak earners for their spot", String(sc.rows.filter(s => s.verdict.startsWith("Weak")).length), "Fair index clearly (95% CI) under 0.85 of same-zone par.")}
+    ${tile("Typical machine house win", fmtK(sc.typical), "Average per machine over the period, the benchmark every gap is measured from.")}
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <h3>Luck against earning power</h3>
+      <div class="sub">Each dot is a machine. Right = earns more theo than same-zone peers; down = house win below theo. Click a dot for its PAR check.</div>
+      ${legend([{ label: "Manager's bottom 10", color: "--s1" }, { label: "Our replacement targets", color: "--s2" }, { label: "Leak lead", color: "--critical" }, { label: "Other machines", color: "--axis" }])}
+      ${scatter()}
+    </div>
+    <div class="panel">
+      <h3>The floor, by fair index</h3>
+      <div class="sub">Machine positions from the floor plan (metres). Red earns under par for its zone, blue over. Rings mark the manager's 10.</div>
+      ${floorMap()}
+    </div>
+  </div>
+  <div class="panel" style="margin-top:16px" id="machine-detail">${machineDetail()}</div>
+  <div class="panel" style="margin-top:16px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;justify-content:space-between;margin-bottom:10px">
+      <div><h3>Every machine</h3><div class="sub" style="margin:0">Drill into a zone or bank. ${rows.length} machines shown in the filter.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="small ink2">Zone <select id="f-zone"><option value="all">All zones</option>${D.zones.map(zz => `<option value="${zz}"${zz === z ? " selected" : ""}>${esc(D.zoneName[zz])}</option>`).join("")}</select></label>
+        <label class="small ink2">Bank <select id="f-bank"><option value="all">All banks</option>${banks.map(b => `<option${b === bk ? " selected" : ""}>${b}</option>`).join("")}</select></label>
+      </div>
+    </div>
+    ${bk !== "all" || z !== "all" ? bankStrip(rows) : ""}
+    <div class="tw"><table>
+      <thead><tr>${col("machine_id", "Machine", false)}${col("zone_name", "Zone · bank", false)}${col("manager_rank", "Mgr #")}${col("fair_rank", "Fair #")}${col("house_win_usd", "House win")}${col("theo_usd", "Theo")}${col("luck_z", "Luck z")}${col("hit_rate_z", "Hit z")}${col("fair_index", "Fair idx")}${col("availability", "Uptime")}<th>Verdict</th></tr></thead>
+      <tbody>${shown.map(s => `<tr class="clickable${S.sel === s.machine_id ? " sel" : ""}" data-pick="${s.machine_id}" tabindex="0">
+        <td class="mono">${s.machine_id}<div class="small muted">${esc(s.theme)}</div></td><td>${esc(s.zone_name)}<div class="small muted mono">${s.bank_id}</div></td>
+        <td class="n">${s.manager_rank}</td><td class="n">${s.fair_rank}</td><td class="n">${fmtK(s.house_win_usd)}</td><td class="n">${fmtK(s.theo_usd)}</td>
+        <td class="n">${f2(s.luck_z)}</td><td class="n">${f2(s.hit_rate_z)}</td><td class="n">${f2(s.fair_index)}<span class="muted small"> ±${(1.96 * (s.fair_index_se || 0)).toFixed(2)}</span></td><td class="n">${pct(s.availability, 1)}</td><td>${verdictChip(s.verdict)}</td></tr>`).join("")}</tbody>
+    </table></div>
+    ${sorted.length > 15 ? `<button type="button" id="show-all" style="margin-top:10px">${S.showAll ? "Show top 15" : `Show all ${sorted.length}`}</button>` : ""}
+  </div>
+  </section>`;
+}
+function tile(l, v, d) { return `<div class="tile"><span class="l">${esc(l)}</span><span class="v">${v}</span><span class="d">${esc(d)}</span></div>`; }
+function bankStrip(rows) {
+  const md = sum(rows.map(r => r.days_on_floor)), th = sum(rows.map(r => r.theo_usd)), hw = sum(rows.map(r => r.house_win_usd)), lk = sum(rows.map(r => r.luck_usd)), lc = sum(rows.map(r => r.location_usd));
+  const fl = sc.rows, flth = sum(fl.map(r => r.theo_usd)) / sum(fl.map(r => r.days_on_floor));
+  return `<div class="grid g4" style="margin-bottom:12px">${tile("Theo per machine-day", fmtUSD(th / md), `Floor: ${fmtUSD(flth)}`)}${tile("House win", fmtK(hw), `Luck: ${fmtSigned(lk)}`)}${tile("Location effect", fmtSigned(lc), "vs. floor-average zone, summed over machines")}${tile("Verdicts", String(rows.filter(r => r.verdict.startsWith("Weak")).length) + " weak", `${rows.filter(r => r.verdict === "Unlucky").length} unlucky · ${rows.filter(r => r.verdict === "Quiet location").length} quiet location`)}</div>`;
+}
+
+function scatter() {
+  const W = 560, H = 360, L = 44, R = 14, T = 12, B = 34;
+  const pts = sc.rows.filter(s => s.fair_index != null && s.luck_z != null);
+  const xs = pts.map(s => s.fair_index), ys = pts.map(s => Math.max(-6, Math.min(4, s.luck_z)));
+  const x0 = Math.min(0.4, ...xs), x1 = Math.max(1.6, ...xs), y0 = -5, y1 = 4;
+  const sx = v => L + (v - x0) / (x1 - x0) * (W - L - R), sy = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  const targets = replaceTargets();
+  let g = "";
+  niceTicks(x0, x1, 6).forEach(t => g += `<line class="grid-line" x1="${sx(t)}" x2="${sx(t)}" y1="${T}" y2="${H - B}"/><text x="${sx(t)}" y="${H - B + 14}" text-anchor="middle">${t.toFixed(1)}</text>`);
+  [-4, -2, 0, 2, 4].forEach(t => g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${sy(t)}" y2="${sy(t)}"/><text x="${L - 6}" y="${sy(t) + 4}" text-anchor="end">${t}</text>`);
+  g += `<line class="axis-line" x1="${sx(1)}" x2="${sx(1)}" y1="${T}" y2="${H - B}"/>`;
+  g += `<rect x="${L}" y="${sy(-3.6)}" width="${W - L - R}" height="${sy(y0) - sy(-3.6)}" fill="var(--critical)" opacity=".06"/><text x="${W - R - 4}" y="${sy(-3.6) + 13}" text-anchor="end" class="lbl">beyond chance (z < −3.6)</text>`;
+  g += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" class="lbl">Fair index (theo vs. same-zone par)</text><text x="12" y="${T + 6}" class="lbl" transform="rotate(-90 12 ${T + 6})" text-anchor="end">Luck z</text>`;
+  const order = s => s.verdict.startsWith("Leak") ? 3 : s.manager_rank <= 10 ? 2 : targets.includes(s.machine_id) ? 1 : 0;
+  [...pts].sort((a, b) => order(a) - order(b)).forEach(s => {
+    const o = order(s), c = o === 3 ? "--critical" : o === 2 ? "--s1" : o === 1 ? "--s2" : "--axis";
+    const sel = S.sel === s.machine_id;
+    const t = tipRows(`${s.machine_id} · ${s.theme}`, [["Zone", esc(s.zone_name)], ["Fair index", f2(s.fair_index)], ["Luck z", f2(s.luck_z)], ["House win", fmtK(s.house_win_usd)], ["Verdict", esc(s.verdict)]]);
+    g += `<circle cx="${sx(s.fair_index).toFixed(1)}" cy="${sy(Math.max(y0 + 0.1, Math.min(y1, s.luck_z))).toFixed(1)}" r="${o ? 5 : 4}" fill="var(${c})" stroke="${sel ? "var(--brass)" : "var(--surface)"}" stroke-width="${sel ? 3 : 2}" data-pick="${s.machine_id}" data-tip="${esc(t)}" style="cursor:pointer"/>`;
+  });
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scatter of fair index against luck z-score for every machine">${g}</svg></div>`;
+}
+
+function divColor(v) {
+  // diverging: red below par, grey at par, blue above; clamp 0.5 .. 1.5
+  const t = Math.max(-1, Math.min(1, (v - 1) / 0.5));
+  return t < 0 ? `color-mix(in oklab, var(--div-neg) ${Math.round(-t * 100)}%, var(--div-mid))` : `color-mix(in oklab, var(--div-pos) ${Math.round(t * 100)}%, var(--div-mid))`;
+}
+function floorMap() {
+  const W = 640, H = 560, pad = 26, minX = -4, maxX = 140, minY = -10, maxY = 118;
+  const sx = v => pad + (v - minX) / (maxX - minX) * (W - 2 * pad), sy = v => pad + (v - minY) / (maxY - minY) * (H - 2 * pad);
+  const zones = D.floor_nodes.filter(n => n.node_type === "zone"), zxy = Object.fromEntries(zones.map(z => [z.location_id, z]));
+  let g = "";
+  const closedNow = w => w.closed_from_utc && inPeriod(String(w.closed_from_utc).slice(0, 10)) || (w.closed_to_utc && inPeriod(String(w.closed_to_utc).slice(0, 10)));
+  D.walkways.forEach(w => { const a = zxy[w.zone_a], b = zxy[w.zone_b]; if (!a || !b) return; const closed = w.closure_reason && closedNow(w);
+    g += `<line x1="${sx(a.x_m)}" y1="${sy(a.y_m)}" x2="${sx(b.x_m)}" y2="${sy(b.y_m)}" stroke="${closed ? "var(--critical)" : "var(--rule)"}" stroke-width="${closed ? 3 : 8}" stroke-linecap="round"${closed ? ' stroke-dasharray="6 5"' : ""} data-tip="${esc(`<b>Walkway ${w.walkway_id}</b>${w.closure_reason ? `<div>Closed for ${esc(w.closure_reason)} ${String(w.closed_from_utc).slice(0, 10)} → ${String(w.closed_to_utc).slice(0, 10)}</div>` : ""}<div class="row"><span>length</span><span>${w.length_m} m</span></div>`)}"/>`; });
+  const mgr = new Set(sc.rows.filter(s => s.manager_rank <= 10).map(s => s.machine_id));
+  sc.rows.filter(s => !(s.retire_date && s.retire_date <= CAL[S.b])).forEach(s => {
+    const dim = (S.zone !== "all" && s.zone_id !== S.zone) || (S.bank !== "all" && s.bank_id !== S.bank);
+    const sel = S.sel === s.machine_id, isM = mgr.has(s.machine_id);
+    const t = tipRows(`${s.machine_id} · ${s.theme}`, [["Zone · bank", esc(s.zone_name + " · " + s.bank_id)], ["Fair index", f2(s.fair_index)], ["Verdict", esc(s.verdict)]]);
+    g += `<rect x="${(sx(s.x) - 4.5).toFixed(1)}" y="${(sy(s.y) - 4.5).toFixed(1)}" width="9" height="9" rx="2" fill="${divColor(s.fair_index)}" stroke="${sel ? "var(--brass)" : isM ? "var(--ink)" : "var(--surface)"}" stroke-width="${sel ? 3 : isM ? 1.6 : 1}" opacity="${dim ? 0.25 : 1}" data-pick="${s.machine_id}" data-tip="${esc(t)}" style="cursor:pointer"/>`;
+  });
+  zones.forEach(z => g += `<text x="${sx(z.x_m)}" y="${sy(z.y_m) - 10}" text-anchor="middle" class="lbl" style="font-weight:600">${esc(z.name)}</text>`);
+  D.floor_nodes.filter(n => n.node_type === "entrance").forEach(n => g += `<path d="M${sx(n.x_m) - 7},${sy(n.y_m)} h14" stroke="var(--brass)" stroke-width="4" stroke-linecap="round"/><text x="${sx(n.x_m) + (n.x_m > 100 ? -10 : 10)}" y="${sy(n.y_m) + (n.y_m < 5 ? 16 : n.y_m > 100 ? -6 : 4)}" text-anchor="${n.x_m > 100 ? "end" : "start"}">${esc(n.name)}</text>`);
+  D.floor_nodes.filter(n => n.node_type === "outlet").forEach(n => g += `<circle cx="${sx(n.x_m)}" cy="${sy(n.y_m)}" r="5" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/><text x="${sx(n.x_m) + 8}" y="${sy(n.y_m) + 4}">${esc(n.name)}</text>`);
+  const key = `<div class="legend" style="margin-top:6px"><span>Fair index</span><span style="display:inline-block;width:140px;height:9px;border-radius:2px;background:linear-gradient(90deg,var(--div-neg),var(--div-mid),var(--div-pos))"></span><span class="mono small">0.5 · 1.0 · 1.5</span><span><span class="key-line" style="background:var(--critical)"></span>Walkway closed in period</span></div>`;
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Floor plan with machines coloured by fair index">${g}</svg></div>${key}`;
+}
+
+function machineDetail() {
+  const s = sc.by[S.sel] || sc.rows[0]; if (!s) return "";
+  const md = D.machine_day, rows = D.byMachine[s.m].filter(r => md.d[r] >= S.a && md.d[r] <= S.b);
+  const x = rows.map(r => CAL[md.d[r]]);
+  let ch = 0, ct = 0, cv = 0; const hw = [], th = [], lo = [], hi = [];
+  rows.forEach(r => { ch += md.hw[r] / 100; ct += md.ci[r] * (1 - s.rtp) / 100; cv += md.vr[r] / 1e4; hw.push(ch); th.push(ct); lo.push(ct - 2 * Math.sqrt(cv)); hi.push(ct + 2 * Math.sqrt(cv)); });
+  const maxAbs = Math.max(...CAUSES.map(c => Math.abs(s[c.key + "_usd"])), 1);
+  const sql = D.sqlScore[s.machine_id];
+  const fullNote = S.a === 0 && S.b === NDAYS - 1 && sql ? `<span class="small muted">Pipeline verdict: ${esc(sql.verdict)}</span>` : "";
+  return `<div class="detail">
+    <div class="head"><span class="eyebrow">PAR check</span><span class="mid">${s.machine_id}</span><span class="ink2">${esc(s.theme)} · ${esc(s.manufacturer)} · ${esc(s.lease_class.replace(/_/g, " "))} · ${esc(s.zone_name)} ${s.bank_id} · published RTP ${pct(s.rtp, 0)} (${esc(s.volatility_class.replace("_", " "))} volatility)</span>${verdictChip(s.verdict)}${fullNote}</div>
+    <div class="kv">
+      <div><span class="k">House win</span><span class="v">${fmtK(s.house_win_usd)}</span></div>
+      <div><span class="k">Theo (expected)</span><span class="v">${fmtK(s.theo_usd)}</span></div>
+      <div><span class="k">Hold vs. spec</span><span class="v">${pct(s.observed_hold, 1)} / ${pct(s.theo_hold, 0)}</span></div>
+      <div><span class="k">Luck z</span><span class="v">${f2(s.luck_z)}</span></div>
+      <div><span class="k">Hit rate vs. paytable</span><span class="v">${pct(s.observed_hit_rate, 1)} / ${pct(s.spec_hit, 1)}</span></div>
+      <div><span class="k">Hit-rate z</span><span class="v${Math.abs(s.hit_rate_z) > 6 ? " flag" : ""}">${f2(s.hit_rate_z)}</span></div>
+      <div><span class="k">Fair index (95% CI)</span><span class="v">${f2(s.fair_index)} ± ${(1.96 * (s.fair_index_se || 0)).toFixed(2)}</span></div>
+      <div><span class="k">Uptime · days on floor</span><span class="v">${pct(s.availability, 1)} · ${s.days_on_floor}</span></div>
+    </div>
+    <div class="grid g2">
+      <div><h3 style="font-size:1.05rem;margin-bottom:6px">Gap to a typical machine: ${fmtSigned(s.gap_usd)}</h3>
+        ${hbars(CAUSES.map(c => ({ label: c.label, value: s[c.key + "_usd"], c: c.color })), { fmt: fmtSigned, colorOf: r => r.c, max: maxAbs })}
+        <p class="small muted" style="margin-top:8px">The six parts add up exactly to the gap. Location = what an average machine in its zone earned vs. the floor; hold setting = theo lost to a more generous paytable than its zone neighbours.</p></div>
+      <div><h3 style="font-size:1.05rem;margin-bottom:6px">Cumulative house win vs. theo</h3>
+        ${legend([{ label: "House win", color: "--s1", line: true }, { label: "Theo with ±2σ luck band", color: "--s2", line: true }])}
+        ${lineChart("machine", { x, series: [{ name: "House win", color: "--s1", values: hw, endLabel: true }, { name: "Theo", color: "--s2", values: th, band: [lo, hi], width: 1.5 }], height: 220, label: `Cumulative house win and theo for ${s.machine_id}` })}
+        <p class="small muted" style="margin-top:6px">${s.luck_z < -3.6 || Math.abs(s.hit_rate_z) > 6 ? "House win falls outside what the published game math allows by chance: a reason to inspect the paytable, not proof of wrongdoing." : "House win stays inside the band chance allows: the gap here is not luck."}</p></div>
+    </div></div>`;
+}
+
+function sectionDemand() {
+  const fd = D.floor_day.filter(r => inPeriod(String(r.gaming_date).slice(0, 10)));
+  const x = fd.map(r => String(r.gaming_date).slice(0, 10));
+  const evBands = D.event_lift.filter(e => inPeriod(e.start_date) || inPeriod(e.end_date)).map(e => ({ from: e.start_date < x[0] ? x[0] : e.start_date, to: e.end_date > x[x.length - 1] ? x[x.length - 1] : e.end_date, label: "", color: e.local_scope === "property" ? "--brass-wash" : "--rule", opacity: 0.9 }));
+  const zw = D.zone_week.filter(r => inPeriod(String(r.week_start).slice(0, 10)) || inPeriod(addDays(String(r.week_start).slice(0, 10), 6)));
+  const weeks = [...new Set(zw.map(r => String(r.week_start).slice(0, 10)))].sort();
+  const b40 = weeks.map(w => zw.find(r => r.zone_id === "Z-B40" && String(r.week_start).slice(0, 10) === w)?.coin_in_per_machine_day_usd ?? null);
+  const others = weeks.map(w => { const rr = zw.filter(r => r.zone_id !== "Z-B40" && String(r.week_start).slice(0, 10) === w); return rr.length ? sum(rr.map(r => r.coin_in_per_machine_day_usd * r.machine_days)) / sum(rr.map(r => r.machine_days)) : null; });
+  const months = monthsInPeriod();
+  const monthly = months.map(m => { const r = D.floor_day.filter(d => d.month === m); return { m, ci: sum(r.map(d => d.coin_in_usd)) / r.length, yoy: r[0]?.city_visitor_yoy, conv: r[0]?.city_convention_attendance_month }; });
+  return `<section id="demand">
+  <div class="sec-head"><div class="q">Question 2 · What changed in demand, and why?</div><h2>Demand followed access, events and the city</h2>
+  <p class="lede">Three changes on the floor work as natural experiments. Each is measured against the rest of the floor over the same days (difference-in-differences), so seasonality and citywide swings cancel out.</p></div>
+  <div class="panel">
+    <h3>Daily floor coin-in</h3><div class="sub">All play, carded or not. Shaded: citywide events (grey) and the property's own promotions (gold). Hover for the day.</div>
+    ${lineChart("floor", { x, series: [{ name: "Coin-in", color: "--s1", values: fd.map(r => r.coin_in_usd) }], bands: evBands, height: 250, label: "Daily floor coin-in" })}
+    <details><summary>Show the event lifts as a table</summary><div class="tw"><table><thead><tr><th>Event</th><th>Type</th><th>Dates</th><th class="n">Lift vs. same-weekday median</th></tr></thead><tbody>
+      ${D.event_lift.map(e => `<tr><td>${esc(e.name)}</td><td>${esc(e.event_type.replace("_", " "))}</td><td class="mono">${shortDate(e.start_date)}–${shortDate(e.end_date)}</td><td class="n">${spct(e.lift)}</td></tr>`).join("")}</tbody></table></div></details>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>Back Forty lives on foot traffic</h3><div class="sub">Coin-in per machine-day by week. Shaded: walkway W-ENT-B40 from the Main Entrance closed for renovation (Mar 3 – Apr 6).</div>
+      ${legend([{ label: "Back Forty", color: "--s2", line: true }, { label: "Rest of floor", color: "--axis", line: true }])}
+      ${lineChart("zones", { x: weeks, series: [{ name: "Back Forty", color: "--s2", values: b40, endLabel: true }, { name: "Rest of floor", color: "--axis", values: others }], bands: [{ from: "2025-03-03", to: "2025-03-31", color: "--brass-wash" }].filter(() => weeks.length), height: 220, yMin: 0, label: "Weekly coin-in per machine-day, Back Forty vs rest of floor" })}
+    </div>
+    <div class="panel"><h3>Natural experiments</h3><div class="sub">Full Jan–Jun window. Effect = treated change ÷ control change − 1.</div>
+      <div class="tw"><table><thead><tr><th>Change</th><th class="n">Treated</th><th class="n">Control</th><th class="n">Effect</th></tr></thead><tbody>
+      ${D.experiments.map(e => `<tr><td>${esc(e.experiment)}<div class="small muted">${esc(e.window_note)}</div></td><td class="n">${spct(e.treated_change)}</td><td class="n">${spct(e.control_change)}</td><td class="n"><b>${spct(e.did_effect)}</b></td></tr>`).join("")}
+      </tbody></table></div>
+      <div class="findings">
+        <div class="finding">Closing one walkway cut Back Forty play by <b>${spct(-(-D.experiments[0].did_effect), 0)}</b> and its door counter by the same share: its low earnings are a <b>location</b> problem that a new cabinet in the same slot would inherit.</div>
+        <div class="finding">The eight Aurora Link machines added on Mar 24 run at <b>1.37×</b> par without taking play from their Center Pit neighbours (${spct(D.experiments[2].did_effect)}). New titles can lift a spot.</div>
+        <div class="finding">High-Limit's average bet fell from $5.03 to $4.28 after a $5-minimum Platinum Reels was retired on Feb 25 and replaced by a $1 Classic Sevens.</div>
+      </div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>The city around us</h3><div class="sub">Las Vegas visitor numbers are real LVCVA data, published after 2025: context for explaining the past, never an input to the forecast.</div>
+    <div class="tw"><table><thead><tr><th>Month</th><th class="n">Floor coin-in per day</th><th class="n">LV visitors vs. prior year</th><th class="n">LV convention attendance</th></tr></thead><tbody>
+    ${monthly.map(r => `<tr><td>${monthLabel(r.m)}</td><td class="n">${fmtK(r.ci)}</td><td class="n">${spct(r.yoy)}</td><td class="n">${n0(r.conv)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="findings"><div class="finding">June's floor coin-in per day was the lowest of the half-year, the month Las Vegas visitation fell 11.3% year on year and convention attendance hit its low. Locals' carded play held steady; domestic and regional play fell.</div></div>
+  </div></section>`;
+}
+const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+
+function sectionDowntime() {
+  const dl = D.downtime_lost.filter(r => inPeriod(String(r.gaming_date).slice(0, 10)));
+  const lost = sum(dl.map(r => r.lost_theo_usd)), hrs = sum(dl.map(r => r.downtime_hours));
+  const by = (k) => { const o = {}; dl.forEach(r => o[r[k]] = (o[r[k]] || 0) + r.lost_theo_usd); return o; };
+  const byShift = by("tech_shift"), byMfr = by("manufacturer"), byZone = by("zone_name");
+  const months = monthsInPeriod(), byMonth = months.map(m => sum(dl.filter(r => r.month === m).map(r => r.lost_theo_usd)));
+  const floorTheo = sum(D.floor_day.filter(r => inPeriod(String(r.gaming_date).slice(0, 10))).map(r => r.theo_usd));
+  const rel = D.manufacturer_reliability;
+  const wait = D.wait_vs_staffing;
+  return `<section id="downtime">
+  <div class="sec-head"><div class="q">Question 3 · How much play was lost to downtime, and when?</div><h2>Downtime is real, but small and concentrated</h2>
+  <p class="lede">Every idle machine-second is priced at what an available machine in the same zone, at the same hour and day type, actually took in. A 3 a.m. outage in Back Forty costs far less than a Saturday-night outage at the Main Entrance.</p></div>
+  <div class="grid g4" style="margin-bottom:16px">
+    ${tile("Theo lost to downtime", fmtK(lost), `${pct(lost / floorTheo, 2)} of floor theo in the period`)}
+    ${tile("Machine-hours down", n0(hrs), "Faults, repairs, moves and installs")}
+    ${tile("Ridgeline share of the loss", pct((byMfr.Ridgeline || 0) / (lost || 1), 0), "94 of the 310 machines")}
+    ${tile("Grave-shift wait for a tech", (wait.find(w => w.tech_shift === "grave")?.avg_wait_hours ?? 0).toFixed(1) + " h", "One tech on shift; two-tech shifts wait about 0.1 h")}
+  </div>
+  <div class="grid g3">
+    <div class="panel"><h3>Lost theo by month</h3><div class="sub">May spikes when day-shift techs were short (17 short-staffed shifts in April, 25 in May).</div>
+      ${hbars(months.map((m, i) => ({ label: monthLabel(m), value: byMonth[i] })), { color: "--s3" })}</div>
+    <div class="panel"><h3>By manufacturer</h3><div class="sub">Ridgeline fails ${rel.find(r => r.manufacturer === "Ridgeline").faults_per_100_machine_days.toFixed(1)} times per 100 machine-days vs. ${rel.find(r => r.manufacturer === "Northwind").faults_per_100_machine_days.toFixed(1)} (Northwind) and ${rel.find(r => r.manufacturer === "Halcyon").faults_per_100_machine_days.toFixed(1)} (Halcyon).</div>
+      ${hbars(Object.entries(byMfr).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v })), { color: "--s3" })}
+      <p class="src">Six-month repair cost: ${rel.map(r => `${r.manufacturer} ${fmtK(r.repair_cost_usd)}`).join(" · ")}</p></div>
+    <div class="panel"><h3>By technician shift</h3><div class="sub">When the fault started. Swing carries the most play, grave the longest waits.</div>
+      ${hbars(["day", "swing", "grave"].map(k => ({ label: k[0].toUpperCase() + k.slice(1) + (k === "day" ? " 06–14" : k === "swing" ? " 14–22" : " 22–06"), value: byShift[k] || 0 })), { color: "--s3" })}</div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>Does staffing change response time?</h3><div class="sub">Each fault ticket matched to the techs actually on shift when it opened (full window).</div>
+    <div class="tw"><table><thead><tr><th>Shift</th><th class="n">Techs on shift</th><th>Staffing</th><th class="n">Tickets</th><th class="n">Wait for tech</th><th class="n">Time to fix</th></tr></thead><tbody>
+    ${wait.map(w => `<tr><td>${w.tech_shift}</td><td class="n">${w.techs_on_shift}</td><td>${w.short_staffed ? '<span class="chip"><span class="dot" style="background:var(--warn)"></span>Short-staffed</span>' : "As planned"}</td><td class="n">${w.fault_tickets}</td><td class="n">${w.avg_wait_hours.toFixed(2)} h</td><td class="n">${w.avg_fix_hours.toFixed(2)} h</td></tr>`).join("")}</tbody></table></div>
+    <div class="findings"><div class="finding">Fix time is about 3 h whatever the staffing; waiting is what changes. But a grave-shift downtime hour is worth only about $16 of theo, so an extra grave technician ($11,520) would recover about $1,000 in July. <a href="#plan">Not funded</a>.</div></div>
+  </div></section>`;
+}
+
+function sectionPlayers() {
+  const months = monthsInPeriod();
+  const segs = D.player_segment_month.filter(r => months.includes(r.month) && (S.tier === "all" || r.opening_tier === S.tier) && (S.age === "all" || r.age_band === S.age) && (S.region === "all" || r.home_region === S.region));
+  const t = k => sum(segs.map(r => r[k]));
+  const opts = (k) => [...new Set(D.player_segment_month.map(r => r[k]))].sort();
+  const sel = (id, k, cur, lbl) => `<label class="small ink2">${lbl} <select id="${id}"><option value="all">All</option>${opts(k).map(o => `<option${o === cur ? " selected" : ""}>${esc(o)}</option>`).join("")}</select></label>`;
+  const byTier = opts("opening_tier").map(tr => { const r = segs.filter(s => s.opening_tier === tr); return { tr, pm: sum(r.map(x => x.playing_player_months)), ci: sum(r.map(x => x.coin_in_usd)), net: sum(r.map(x => x.player_net_usd)), theo: sum(r.map(x => x.theo_usd)), ahead: sum(r.map(x => x.ahead_player_months)), comp: sum(r.map(x => x.comp_cost_usd)) }; });
+  const conc = D.player_concentration;
+  const segColors = ["--s1", "--s2", "--s3", "--s4", "--s5"];
+  const seg = (k) => `<div class="segbar" role="img" aria-label="Share of ${k} by player band">${conc.map((c, i) => `<div style="flex:${Math.max(c[k], 0.001)};background:var(${segColors[i]})" class="${segColors[i] === "--s4" ? "dark-ink" : ""}" data-tip="${esc(tipRows(c.band.slice(3), [["Players", n0(c.players)], ["Share", pct(c[k], 1)]]))}">${c[k] > 0.08 ? pct(c[k], 0) : ""}</div>`).join("")}</div>`;
+  return `<section id="players">
+  <div class="sec-head"><div class="q">Question 4 · What did tracked players wager, get back and net?</div><h2>Results are concentrated, and most players lose a little</h2>
+  <p class="lede">Loyalty-card (tracked) play only, about two thirds of all coin-in. Player net = payout − coin-in; luck = net + theo. Nothing here is used to target heavier losers.</p></div>
+  <div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${sel("f-tier", "opening_tier", S.tier, "Tier")}${sel("f-age", "age_band", S.age, "Age band")}${sel("f-region", "home_region", S.region, "Home region")}<span class="small muted" style="align-self:center">${months.map(monthLabel).join(", ")}</span></div>
+    <div class="grid g4">
+      ${tile("Tracked coin-in", fmtK(t("coin_in_usd")), `${n0(t("playing_player_months"))} playing player-months`)}
+      ${tile("Paid back", fmtK(t("payout_usd")), `${pct(t("payout_usd") / t("coin_in_usd"), 1)} of coin-in`)}
+      ${tile("Players' net result", fmtSigned(t("player_net_usd")), `Theo ${fmtK(t("theo_usd"))}; luck ${fmtSigned(t("luck_usd"))}`)}
+      ${tile("Months finished ahead", pct(t("ahead_player_months") / t("playing_player_months"), 1), "Share of playing player-months with net > 0")}
+    </div>
+    <div class="tw" style="margin-top:12px"><table><thead><tr><th>Opening tier</th><th class="n">Player-months</th><th class="n">Coin-in</th><th class="n">Net</th><th class="n">Theo</th><th class="n">Ahead</th><th class="n">Comp cost / theo</th></tr></thead><tbody>
+    ${byTier.map(r => `<tr><td>${esc(r.tr)}</td><td class="n">${n0(r.pm)}</td><td class="n">${fmtK(r.ci)}</td><td class="n">${fmtSigned(r.net)}</td><td class="n">${fmtK(r.theo)}</td><td class="n">${pct(r.ahead / (r.pm || 1), 1)}</td><td class="n">${pct(r.comp / (r.theo || 1), 2)}</td></tr>`).join("")}</tbody></table></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>How concentrated are results?</h3><div class="sub">Players ranked by six-month theo (full window, ${n0(sum(conc.map(c => c.players)))} tracked players with play).</div>
+    ${legend(conc.map((c, i) => ({ label: c.band.slice(3), color: segColors[i] })))}
+    <div class="small ink2" style="margin:6px 0 4px">Share of theo</div>${seg("share_of_theo")}
+    <div class="small ink2" style="margin:12px 0 4px">Share of players' losses</div>${seg("share_of_player_losses")}
+    <div class="tw" style="margin-top:12px"><table><thead><tr><th>Band</th><th class="n">Players</th><th class="n">Theo</th><th class="n">Net</th><th class="n">Finished ahead</th><th class="n">Comp / theo</th></tr></thead><tbody>
+    ${conc.map(c => `<tr><td>${esc(c.band.slice(3))}</td><td class="n">${n0(c.players)}</td><td class="n">${fmtK(c.theo_usd)}</td><td class="n">${fmtSigned(c.player_net_usd)}</td><td class="n">${pct(c.share_ahead, 1)}</td><td class="n">${pct(c.comp_reinvestment, 2)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="findings"><div class="finding">The top 5% of tracked players generate <b>${pct(conc[0].share_of_theo + conc[1].share_of_theo, 0)}</b> of tracked theo and carry about half of all player losses. Only 16% of players finished the half-year ahead. Any guest program here should protect, not push: no offer in this plan is aimed at loss size.</div></div>
+  </div></section>`;
+}
+
+function sectionComps() {
+  const cp = D.comp_price_day.filter(r => inPeriod(String(r.gaming_date).slice(0, 10)));
+  const x = cp.map(r => String(r.gaming_date).slice(0, 10));
+  const t = D.comp_change_test, bef = t.find(r => r.period === "before"), aft = t.find(r => r.period === "after");
+  const cm = D.comp_month;
+  const did = (aft.carded_coin_in_per_day / bef.carded_coin_in_per_day) / (aft.uncarded_coin_in_per_day / bef.uncarded_coin_in_per_day) - 1;
+  const shares = cm.map(r => r.carded_share_of_coin_in), mean = sum(shares) / shares.length, sd = Math.sqrt(sum(shares.map(s => (s - mean) ** 2)) / (shares.length - 1));
+  return `<section id="comps">
+  <div class="sec-head"><div class="q">Question 5 · What did the comp program cost, and did anything change?</div><h2>On May 1, comps got 55% cheaper in points</h2>
+  <p class="lede">Comp cost is the house's cost of the item (already inside food-and-beverage cost of goods, counted once). Reinvestment = comp cost ÷ tracked theo.</p></div>
+  <div class="grid g4" style="margin-bottom:16px">
+    ${tile("Points per comp dollar", `${bef.points_per_face_dollar.toFixed(1)} → ${aft.points_per_face_dollar.toFixed(1)}`, "Menu-value dollar, before vs. after May 1; the floor-wide setting allows 5 to 20")}
+    ${tile("Comp cost per day", `${fmtUSD(bef.comp_cost_per_day)} → ${fmtUSD(aft.comp_cost_per_day)}`, spct(aft.comp_cost_per_day / bef.comp_cost_per_day - 1) + " after the cut")}
+    ${tile("Reinvestment", `${pct(bef.comp_reinvestment, 2)} → ${pct(aft.comp_reinvestment, 2)}`, "Comp cost as a share of tracked theo")}
+    ${tile("Carded share of play", `${pct(bef.carded_share, 1)} → ${pct(aft.carded_share, 1)}`, `Change ${spct(aft.carded_share - bef.carded_share, 1)}; months vary by ±${(sd * 100).toFixed(1)} pt`)}
+  </div>
+  <div class="grid g2">
+    <div class="panel"><h3>What a comp cost in points, by day</h3><div class="sub">Points spent per dollar of menu value. A step, not a drift: one policy change on gaming day May 1.</div>
+      ${lineChart("comp", { x, series: [{ name: "Points per comp dollar", color: "--s1", values: cp.map(r => r.points_per_face_dollar) }], yfmt: v => v.toFixed(0), height: 220, yMin: 0, marks: x.includes("2025-05-01") ? [{ date: "2025-05-01", label: "May 1 price cut" }] : [], label: "Points per comp dollar by day" })}</div>
+    <div class="panel"><h3>Did cheaper comps buy play?</h3><div class="sub">Carded play (exposed to the change) tested against uncarded play (not exposed), Jan–Apr vs. May–Jun.</div>
+      <div class="tw"><table><thead><tr><th></th><th class="n">Before</th><th class="n">After</th><th class="n">Change</th></tr></thead><tbody>
+        <tr><td>Carded coin-in per day</td><td class="n">${fmtK(bef.carded_coin_in_per_day)}</td><td class="n">${fmtK(aft.carded_coin_in_per_day)}</td><td class="n">${spct(aft.carded_coin_in_per_day / bef.carded_coin_in_per_day - 1)}</td></tr>
+        <tr><td>Uncarded coin-in per day</td><td class="n">${fmtK(bef.uncarded_coin_in_per_day)}</td><td class="n">${fmtK(aft.uncarded_coin_in_per_day)}</td><td class="n">${spct(aft.uncarded_coin_in_per_day / bef.uncarded_coin_in_per_day - 1)}</td></tr>
+        <tr><td>Comps redeemed per day</td><td class="n">${n0(bef.comps_per_day)}</td><td class="n">${n0(aft.comps_per_day)}</td><td class="n">${spct(aft.comps_per_day / bef.comps_per_day - 1)}</td></tr>
+        <tr><td><b>Carded vs. uncarded</b></td><td></td><td></td><td class="n"><b>${spct(did)}</b></td></tr>
+      </tbody></table></div>
+      <div class="findings"><div class="finding">Cost rose about $78 a day and reinvestment rose 0.12 pt. Carded play may have gained ${spct(did, 1)} against uncarded play, but monthly carded share moves by ±${(sd * 100).toFixed(1)} pt on its own, so two months cannot tell a real lift from noise. Only a randomised pilot can (priced in the plan; not chosen this month).</div></div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>By month</h3><div class="tw"><table><thead><tr><th>Month</th><th class="n">Comps</th><th class="n">Comp cost</th><th class="n">Menu value</th><th class="n">Points / comp $</th><th class="n">Reinvestment</th><th class="n">Carded share</th></tr></thead><tbody>
+    ${cm.filter(r => monthsInPeriod().includes(r.month)).map(r => `<tr><td>${monthLabel(r.month)}</td><td class="n">${n0(r.comps_redeemed)}</td><td class="n">${fmtUSD(r.comp_cost_usd)}</td><td class="n">${fmtUSD(r.comp_face_value_usd)}</td><td class="n">${r.points_per_face_dollar.toFixed(1)}</td><td class="n">${pct(r.comp_reinvestment, 2)}</td><td class="n">${pct(r.carded_share_of_coin_in, 1)}</td></tr>`).join("")}</tbody></table></div></div>
+  </section>`;
+}
+
+function sectionModel() {
+  const fc = D.forecast, x = fc.map(r => String(r.gaming_date).slice(0, 10));
+  const p = D.forecast_params[0], met = D.forecast_metrics, selT = D.forecast_selection;
+  const hold = met.filter(m => m.period === "holdout May-Jun");
+  return `<section id="model">
+  <div class="sec-head"><div class="q">Model and validation</div><h2>A daily coin-in forecast, frozen on April 30</h2>
+  <p class="lede">One simple time-series model, compared honestly with the required baseline on a time-based holdout. It changes one decision: how the July promotion is bought and judged.</p></div>
+  <div class="grid g2">
+    <div class="panel"><h3>How it was validated</h3>
+      <ol class="steps">
+        <li><span><b>Choose on April only.</b> Five candidates were fit on Jan–Mar and scored on April. <span class="mono">${esc(p.chosen_model)}</span> won (April MAE ${fmtK(selT[0].mae)}).</span></li>
+        <li><span><b>Freeze.</b> The winner and the constant-mean baseline were refit on Jan–Apr and frozen on ${esc(p.freeze_date)}. Events count only if announced by then, so the Locals Week (announced May 26) is invisible to it.</span></li>
+        <li><span><b>Score once on May–June.</b> MAE ${fmtK(p.holdout_mae_model)} (${pct(p.holdout_mape_model, 1)} of a day's coin-in) vs. ${fmtK(p.holdout_mae_baseline)} for the baseline: ${pct(p.mae_improvement_vs_baseline, 0)} less error.</span></li>
+        <li><span><b>Report what we did not use.</b> Post-hoc, a median-based variant would have scored better on the holdout. Switching now would leak the holdout into the choice, so the frozen model stands.</span></li>
+      </ol></div>
+    <div class="panel"><h3>Scores</h3><div class="tw"><table><thead><tr><th>Model</th><th>Period</th><th class="n">MAE</th><th class="n">MAPE</th><th class="n">Bias</th></tr></thead><tbody>
+      ${met.map(m => `<tr><td class="mono small">${esc(m.model)}</td><td class="small">${esc(m.period)}</td><td class="n">${fmtK(m.mae)}</td><td class="n">${pct(m.mape, 1)}</td><td class="n">${fmtSigned(m.bias)}</td></tr>`).join("")}</tbody></table></div>
+      <details><summary>April selection table (fit on Jan–Mar)</summary><div class="tw"><table><thead><tr><th>Candidate</th><th class="n">April MAE</th><th class="n">Bias</th></tr></thead><tbody>${selT.map(s => `<tr><td class="mono small">${esc(s.model)}</td><td class="n">${fmtK(s.mae)}</td><td class="n">${fmtSigned(s.bias)}</td></tr>`).join("")}</tbody></table></div></details></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>Forecast against actuals</h3><div class="sub">Shaded: April validation and the May–June holdout; July is the frozen forecast with its 80% band (measured on the holdout).</div>
+    ${legend([{ label: "Actual", color: "--s1", line: true }, { label: "Frozen forecast", color: "--s2", line: true }, { label: "Baseline (constant mean)", color: "--muted", line: true }])}
+    ${lineChart("forecast", { x, series: [{ name: "Actual", color: "--s1", values: fc.map(r => r.actual_coin_in_usd) }, { name: "Forecast", color: "--s2", values: fc.map(r => r.model_coin_in_usd), band: [fc.map(r => r.split.startsWith("forecast") ? r.lower_80_usd : null), fc.map(r => r.split.startsWith("forecast") ? r.upper_80_usd : null)], width: 1.5 }, { name: "Baseline", color: "--muted", values: fc.map(r => r.baseline_coin_in_usd), width: 1.5 }], bands: [{ from: "2025-04-01", to: "2025-04-30", color: "--rule", label: "validation" }, { from: "2025-05-01", to: "2025-06-30", color: "--brass-wash", label: "holdout" }, { from: "2025-07-01", to: "2025-07-30", color: "--rule", label: "July forecast" }], height: 280, label: "Daily coin-in, forecast vs actual" })}
+    <div class="findings">
+      <div class="finding"><b>The decision it changes.</b> On a normal weekend the frozen forecast misses by about ${pct(p.weekend_rmse_pct, 1)}, so a single promotion weekend can only be told apart from noise if it lifts play by ${pct(p.min_detectable_promo_lift, 0)} or more. The Winter Slot Tournament (+18%) would clear that; the Locals Week (+4%) would not. So the plan buys <b>one</b> tournament-style weekend, judges it against this forecast, and buys the second only if it clears ${pct(p.min_detectable_promo_lift, 0)}.</div>
+      <div class="finding">The forecast ran high in May–June (bias ${fmtSigned(hold.find(h => h.model === p.chosen_model).bias)} a day): demand softened, in line with June's citywide fall in visitors. July benefit estimates use the recent 8 weeks, not the Jan–Apr level, for this reason.</div>
+    </div></div>
+  </section>`;
+}
+
+function sectionPlan() {
+  const plan = D.action_plan[0], opts = D.action_options;
+  const chosen = opts.filter(o => o.recommended);
+  const segC = ["--s1", "--s2", "--s3"];
+  const maxV = Math.max(...opts.map(o => Math.max(o.benefit_high_usd, o.cost_usd)));
+  const link = { "A-INSPECT": ["#machines", "M-1158"], "A-REPLACE-LEASE": ["#answer", "M-1200"], "A-PROMO": ["#model", null], "A-WAYFINDING": ["#demand", null], "A-TECH-SHIFT": ["#downtime", null], "A-PREVENTIVE": ["#downtime", null], "A-COMP-PILOT": ["#comps", null] };
+  return `<section id="plan">
+  <div class="sec-head"><div class="q">Question 6 · Which actions would we fund with $100,000?</div><h2>Fix the leak, replace the right ten, test one promotion</h2>
+  <p class="lede">July 1–30, 2025. Cost follows the catalogue rule: quantity × (unit cost + daily cost × days after the lead time). Benefit is expected extra theo on the days left after the lead time, at the last eight weeks' run rate. Low and high show how wrong it could be.</p></div>
+  <div class="panel"><h3>The budget</h3><div class="sub">${fmtUSD(plan.total_cost_usd)} committed across ${plan.action_types} action types; ${fmtUSD(plan.budget_kept_usd)} kept. Expected July benefit ${fmtK(plan.benefit_base_usd)} (range ${fmtK(plan.benefit_low_usd)} – ${fmtK(plan.benefit_high_usd)}).</div>
+    ${legend([...chosen.map((o, i) => ({ label: o.name, color: segC[i] })), { label: "Kept", color: "--rule" }])}
+    <div class="segbar" role="img" aria-label="Budget split">${chosen.map((o, i) => `<div style="flex:${o.cost_usd};background:var(${segC[i]})" data-tip="${esc(tipRows(o.name, [["Cost", fmtUSD(o.cost_usd)]]))}">${o.cost_usd >= 8000 ? fmtK(o.cost_usd) : ""}</div>`).join("")}<div style="flex:${plan.budget_kept_usd};background:var(--rule);color:var(--ink)" data-tip="${esc(tipRows("Kept", [["Amount", fmtUSD(plan.budget_kept_usd)]]))}">${fmtK(plan.budget_kept_usd)} kept</div></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">${chosen.map((o, i) => `<div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div style="display:flex;gap:8px;align-items:center"><span class="dot" style="background:var(${segC[i]})"></span><span class="eyebrow">${esc(o.action_type_id)}</span></div>
+      <h3>${esc(o.name)}</h3>
+      <div class="kv"><div><span class="k">Quantity</span><span class="v">${o.quantity}</span></div><div><span class="k">Cost</span><span class="v">${fmtUSD(o.cost_usd)}</span></div><div><span class="k">Expected benefit</span><span class="v">${fmtK(o.benefit_base_usd)}</span></div><div><span class="k">Range</span><span class="v">${fmtK(o.benefit_low_usd)}–${fmtK(o.benefit_high_usd)}</span></div></div>
+      <p class="small"><b>Targets.</b> <span class="mono">${esc(o.targets)}</span></p>
+      <p class="small"><b>Evidence.</b> ${esc(o.evidence)}</p>
+      <p class="small"><b>Assumption.</b> ${esc(o.assumption)}</p>
+      <p class="small"><b>How we'll know.</b> ${esc(o.measurement)}</p>
+      <a href="${link[o.action_type_id]?.[0] || "#plan"}" ${link[o.action_type_id]?.[1] ? `data-pick-go="${link[o.action_type_id][1]}"` : ""}>Trace the evidence</a>
+    </div>`).join("")}</div>
+  <div class="panel" style="margin-top:16px"><h3>Everything we priced</h3><div class="sub">Bar: low-to-high benefit, dot = expected, black tick = cost. An action is worth it when the dot sits right of the tick.</div>
+    <div class="tw"><table><thead><tr><th>Action</th><th class="n">Qty</th><th class="n">Cost</th><th style="min-width:200px">Benefit vs. cost</th><th class="n">Expected net</th><th>Decision</th></tr></thead><tbody>
+    ${opts.map(o => `<tr><td>${esc(o.name)}${o.action_type_id.includes("manager") ? '<div class="small muted">The manager\'s plan: lease replacements for the bottom 10</div>' : ""}<div class="small muted mono">${esc(o.targets.length > 60 ? o.targets.slice(0, 58) + "…" : o.targets)}</div></td>
+      <td class="n">${o.quantity}</td><td class="n">${fmtK(o.cost_usd)}</td>
+      <td><div class="opt-range" data-tip="${esc(tipRows(o.name, [["Low", fmtK(o.benefit_low_usd)], ["Expected", fmtK(o.benefit_base_usd)], ["High", fmtK(o.benefit_high_usd)], ["Cost", fmtK(o.cost_usd)]]))}"><span class="bar-r" style="left:${o.benefit_low_usd / maxV * 100}%;width:${Math.max(0.5, (o.benefit_high_usd - o.benefit_low_usd) / maxV * 100)}%"></span><span class="cost" style="left:${o.cost_usd / maxV * 100}%"></span><span class="base" style="left:${o.benefit_base_usd / maxV * 100}%"></span></div></td>
+      <td class="n ${o.net_base_usd >= 0 ? "ok" : ""}">${fmtSigned(o.net_base_usd)}</td><td>${o.recommended ? '<span class="pill">Fund</span>' : '<span class="pill no">Skip</span>'}</td></tr>`).join("")}</tbody></table></div>
+    <div class="findings">
+      <div class="finding"><b>Why not the manager's plan?</b> Leasing new titles for the manager's list costs about the same but returns a third as much: two are already retired, one is 49 days old, one is a payout fault a new cabinet would not fix, and the Back Forty six would carry their zone's location drag into the new cabinets.</div>
+      <div class="finding"><b>Runner-up: Back Forty signage.</b> The walkway closure proves Back Forty play follows foot traffic, and signage breaks even at a 2.8% lift. It loses its slot only because its uplift is an assumption, while the promotion's is observed twice.</div>
+      <div class="finding"><b>Not funded:</b> an extra grave technician (−$10.6K net) and the Ridgeline sweep (−$3.4K net, no maintenance history to calibrate). The comp pilot is the right next step once the slot frees up.</div>
+    </div></div>
+  </section>`;
+}
+
+function sectionPipeline() {
+  const exp = D.expectations;
+  // consistency check: browser recomputation vs. pipeline scorecard for the full period
+  const full = computeScorecard(0, NDAYS - 1);
+  let maxGap = 0, maxFi = 0, mism = 0;
+  full.rows.forEach(s => { const q = D.sqlScore[s.machine_id]; if (!q) return; maxGap = Math.max(maxGap, Math.abs(q.gap_usd - s.gap_usd)); maxFi = Math.max(maxFi, Math.abs(q.fair_index - s.fair_index)); if (q.verdict !== s.verdict) mism++; });
+  const layers = [
+    ["Bronze · Auto Loader", ["22 streaming tables, one per release file", "_source_file + _ingested_at lineage", "Unity Catalog volume /raw"]],
+    ["Silver · conformed", ["silver_machine_day (off-floor days dropped)", "silver_machine_hour", "silver_operations (gaming day, shift)", "silver_redemptions, silver_player_period", "silver_property_day (+ NOAA weather)"]],
+    ["Gold · decisions", ["gold_machine_scorecard (verdicts)", "gold_machine_day_components", "gold_downtime_lost, gold_repair_response", "gold_natural_experiments, gold_event_lift", "gold_comp_change_test, gold_player_concentration", "gold_action_options, gold_action_plan"]],
+    ["ML · MLflow + UC", ["5 candidate runs, April selection", "floor_coin_in_forecast @champion", "gold_forecast (+ July plan)"]],
+  ];
+  return `<section id="pipeline">
+  <div class="sec-head"><div class="q">How this was built</div><h2>A Databricks lakehouse behind every number</h2>
+  <p class="lede">A Lakeflow declarative pipeline (bronze → silver → gold) with data-quality expectations, an MLflow-tracked forecast registered in Unity Catalog, and one export that feeds this page. The same SQL files also run locally on DuckDB for verification.</p></div>
+  <div class="lineage">${layers.map(([h, items]) => `<div class="layer"><h4>${esc(h)}</h4><ul>${items.map(i => `<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>Data-quality expectations</h3><div class="sub">Every common mistake from the challenge guide is a rule the pipeline enforces. Drop = row removed; fail = the update stops.</div>
+      <div class="tw"><table><thead><tr><th>Table · rule</th><th>On violation</th><th class="n">Rows checked</th><th class="n">Failed</th></tr></thead><tbody>
+      ${exp.map(e => `<tr><td class="mono small">${esc(e.dataset)}<div>${esc(e.expectation)}</div></td><td>${esc(e.action)}</td><td class="n">${n0(e.rows_in)}</td><td class="n">${e.rows_failed ? `<b>${n0(e.rows_failed)}</b>` : "0"}</td></tr>`).join("")}</tbody></table></div>
+      <p class="src">The 1,018 dropped rows are machine-days before install or after retirement: not zero sales.</p></div>
+    <div class="panel"><h3>Same maths in two places</h3><div class="sub">This page recomputes the scorecard in your browser for whatever period you pick. For the full period it must match the pipeline's gold table.</div>
+      <div class="kv"><div><span class="k">Largest gap difference</span><span class="v ${maxGap < 1 ? "ok" : "flag"}">${fmtUSD(maxGap, 2)}</span></div><div><span class="k">Largest fair-index difference</span><span class="v ${maxFi < 1e-6 ? "ok" : "flag"}">${maxFi.toExponential(1)}</span></div><div><span class="k">Verdicts that differ</span><span class="v ${mism === 0 ? "ok" : "flag"}">${mism} of ${full.rows.length}</span></div></div>
+      <div class="findings">
+        <div class="finding">Luck test: Var(house win) = Σ bet² × Var(payout ÷ bet), with the variance taken from the published game math, so z = (house win − theo) ÷ √Var. The normal approximation is weakest for Jackpot Summit (very high volatility); its scores are read with that in mind.</div>
+        <div class="finding">Fair index: theo ÷ what same-zone machines earned on the same days per available second, with a ratio-estimator 95% interval across days.</div>
+      </div></div>
+  </div>
+  </section>`;
+}
+
+/* ============================== render & events ============================== */
+function render() {
+  sc = computeScorecard(S.a, S.b);
+  const y = scrollY;
+  $("#app").innerHTML = sectionAnswer() + sectionMachines() + sectionDemand() + sectionDowntime() + sectionPlayers() + sectionComps() + sectionModel() + sectionPlan() + sectionPipeline() +
+    `<footer><p>The Gilded Ace is fictional and all of its data is synthetic (Dashboard Royale release ${esc(D.meta.window.join(" → "))}). Only the LVCVA, NOAA and Missouri Gaming Commission files are real public data. Unusual payouts are leads to inspect, never accusations. Built with Databricks (Lakeflow, Unity Catalog, MLflow). AI assistance disclosed in the write-up.</p><p style="margin-top:6px">Data exported ${esc(D.meta.generated_at)}.</p></footer>`;
+  scrollTo(0, y);
+  syncPeriodControls();
+}
+function rerenderMachine() { const el = $("#machine-detail"); if (el) el.innerHTML = machineDetail(); document.querySelectorAll("[data-pick]").forEach(el => { const sel = el.dataset.pick === S.sel; if (el.tagName === "TR") el.classList.toggle("sel", sel); }); }
+
+const PRESETS = [["Full half-year", "2025-01-01", "2025-06-30"], ["Jan–Apr (training)", "2025-01-01", "2025-04-30"], ["May–Jun (holdout)", "2025-05-01", "2025-06-30"], ["Walkway closure", "2025-03-03", "2025-04-06"], ["June", "2025-06-01", "2025-06-30"]];
+function syncPeriodControls() {
+  const s = $("#p-start"), e = $("#p-end");
+  s.min = e.min = CAL[0]; s.max = e.max = CAL[NDAYS - 1]; s.value = CAL[S.a]; e.value = CAL[S.b];
+  $("#presets").innerHTML = PRESETS.map(([l, a, b]) => `<button type="button" data-preset="${a}|${b}" aria-pressed="${CAL[S.a] === a && CAL[S.b] === b}">${l}</button>`).join("");
+}
+function setPeriod(a, b) {
+  let ia = CAL.indexOf(a), ib = CAL.indexOf(b); if (ia < 0) ia = 0; if (ib < 0) ib = NDAYS - 1; if (ib < ia) [ia, ib] = [ib, ia];
+  if (ib - ia < 6) ib = Math.min(NDAYS - 1, ia + 6);
+  S.a = ia; S.b = ib; try { localStorage.setItem("ga-period", `${CAL[ia]}|${CAL[ib]}`); } catch (e) { /* storage unavailable */ }
+  render();
+}
+
+document.addEventListener("click", e => {
+  const pr = e.target.closest("[data-preset]"); if (pr) { const [a, b] = pr.dataset.preset.split("|"); setPeriod(a, b); return; }
+  const go = e.target.closest("[data-pick-go]"); if (go) { S.sel = go.dataset.pickGo; rerenderMachine(); return; }
+  const pk = e.target.closest("[data-pick]"); if (pk) { S.sel = pk.dataset.pick; rerenderMachine(); $("#machine-detail")?.scrollIntoView({ block: "nearest" }); return; }
+  const so = e.target.closest("[data-sort]"); if (so) { const k = so.dataset.sort; if (S.sort === k) S.asc = !S.asc; else { S.sort = k; S.asc = true; } render(); return; }
+  if (e.target.id === "show-all") { S.showAll = !S.showAll; render(); }
+});
+document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr[data-pick]")) { e.preventDefault(); S.sel = e.target.dataset.pick; rerenderMachine(); } });
+document.addEventListener("change", e => {
+  const id = e.target.id;
+  if (id === "p-start" || id === "p-end") setPeriod($("#p-start").value, $("#p-end").value);
+  else if (id === "f-zone") { S.zone = e.target.value; S.bank = "all"; render(); }
+  else if (id === "f-bank") { S.bank = e.target.value; render(); }
+  else if (id === "f-tier") { S.tier = e.target.value; render(); }
+  else if (id === "f-age") { S.age = e.target.value; render(); }
+  else if (id === "f-region") { S.region = e.target.value; render(); }
+});
+$("#theme-btn").addEventListener("click", () => {
+  const root = document.documentElement, cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  root.dataset.theme = cur === "dark" ? "light" : "dark"; try { localStorage.setItem("ga-theme", root.dataset.theme); } catch (e) { /* ignore */ }
+});
+try { const t = localStorage.getItem("ga-theme"); if (t && !document.documentElement.dataset.theme) document.documentElement.dataset.theme = t; } catch (e) { /* ignore */ }
+
+fetch("data/gilded_ace.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
+  D = data; prep();
+  S.b = NDAYS - 1;
+  try { const p = localStorage.getItem("ga-period"); if (p) { const [a, b] = p.split("|"); const ia = CAL.indexOf(a), ib = CAL.indexOf(b); if (ia >= 0 && ib > ia) { S.a = ia; S.b = ib; } } } catch (e) { /* ignore */ }
+  render();
+}).catch(err => { $("#app").innerHTML = `<div class="loading">Couldn't load data/gilded_ace.json (${esc(err.message)}). Serve this folder over HTTP, for example <span class="mono">python -m http.server</span> inside dashboard/, then reload.</div>`; });
+</script>

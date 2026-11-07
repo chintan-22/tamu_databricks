@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.databricks/
+local/_work/
+data_raw/
+mlruns/
+.DS_Store

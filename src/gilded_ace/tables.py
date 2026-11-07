@@ -1,0 +1,26 @@
+"""The challenge tables that land in bronze, keyed by bronze name -> path inside the data release."""
+
+RAW_TABLES = {
+    "prepared_daily_view": "1_prepared_views/prepared_daily_view.parquet",
+    "player_period": "1_prepared_views/player_period.parquet",
+    "property_day": "1_prepared_views/property_day.parquet",
+    "action_catalog": "2_machine_decision/action_catalog.parquet",
+    "calendar_day": "2_machine_decision/calendar_day.parquet",
+    "cost_rules": "2_machine_decision/cost_rules.parquet",
+    "floor_locations": "2_machine_decision/floor_locations.parquet",
+    "floor_walkways": "2_machine_decision/floor_walkways.parquet",
+    "game_math": "2_machine_decision/game_math.parquet",
+    "machine_day": "2_machine_decision/machine_day.parquet",
+    "machines": "2_machine_decision/machines.parquet",
+    "operations": "2_machine_decision/operations.parquet",
+    "placements": "2_machine_decision/placements.parquet",
+    "loyalty_ledger": "3_guests/loyalty_ledger.parquet",
+    "players": "3_guests/players.parquet",
+    "events": "4_context/events.parquet",
+    "zone_traffic_hourly": "4_context/zone_traffic_hourly.parquet",
+    "weather_daily": "4_context/real_sources/weather_daily.parquet",
+    "city_visitation_monthly": "4_context/real_sources/city_visitation_monthly.parquet",
+    "benchmark_property_monthly": "4_context/real_sources/benchmark_property_monthly.parquet",
+    "machine_hour": "5_optional/machine_hour.parquet",
+    "shift_roster": "5_optional/shift_roster.parquet",
+}

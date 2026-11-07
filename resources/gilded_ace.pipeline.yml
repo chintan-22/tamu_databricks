@@ -1,0 +1,29 @@
+resources:
+  pipelines:
+    gilded_ace_pipeline:
+      name: gilded-ace-lakehouse
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      channel: CURRENT
+      photon: true
+      configuration:
+        # Bronze reads every table from this Unity Catalog volume with Auto Loader.
+        gilded_ace.raw_volume_path: /Volumes/${var.catalog}/${var.schema}/raw
+        # Keep wall-clock columns (`*_local`) exactly as published.
+        spark.sql.session.timeZone: UTC
+      libraries:
+        - file:
+            path: ../src/pipeline/bronze.py
+        - file:
+            path: ../src/pipeline/silver.sql
+        - file:
+            path: ../src/pipeline/gold_machines.sql
+        - file:
+            path: ../src/pipeline/gold_operations.sql
+        - file:
+            path: ../src/pipeline/gold_floor.sql
+        - file:
+            path: ../src/pipeline/gold_guests.sql
+        - file:
+            path: ../src/pipeline/gold_actions.sql
