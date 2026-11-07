@@ -20,9 +20,12 @@
 
 dbutils.widgets.text("catalog", "workspace")
 dbutils.widgets.text("schema", "gilded_ace")
+dbutils.widgets.text("ml_schema", "gilded_ace_ml")
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
+ml_schema = dbutils.widgets.get("ml_schema")
 fq = lambda name: f"`{catalog}`.`{schema}`.{name}"  # noqa: E731
+fq_ml = lambda name: f"`{catalog}`.`{ml_schema}`.{name}"  # noqa: E731  (Free Edition: 100 tables per schema)
 
 import os, sys
 sys.path.append(os.path.abspath(".."))
@@ -99,7 +102,7 @@ for name, frame in {
     "gold_forecast_selection": result.selection,
     "gold_forecast_params": params,
 }.items():
-    spark.createDataFrame(frame).write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(fq(name))
+    spark.createDataFrame(frame).write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(fq_ml(name))
 
 print(f"Selected {result.chosen}; holdout MAE ${result.params['holdout_mae_model']:,.0f} "
       f"vs baseline ${result.params['holdout_mae_baseline']:,.0f}")

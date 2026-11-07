@@ -24,6 +24,9 @@ from gilded_ace.lakeflow_sql import Dataset, Expectation, parse_pipeline_sql  # 
 # Spark SQL functions used by the pipeline that DuckDB spells differently.
 SPARK_SHIMS = [
     "CREATE OR REPLACE MACRO unix_timestamp(t) AS epoch(t)",
+    # Spark's PERCENTILE is exact with linear interpolation, i.e. quantile_cont. (Avoid PERCENTILE_APPROX in
+    # the pipeline: on Spark it returns an observed value, so it disagrees with quantile_cont on small groups.)
+    "CREATE OR REPLACE MACRO percentile(x, p) AS quantile_cont(x, p)",
     "CREATE OR REPLACE MACRO percentile_approx(x, p) AS quantile_cont(x, p)",
     "CREATE OR REPLACE MACRO collect_list(x) AS list(x ORDER BY x)",
     "CREATE OR REPLACE MACRO array_join(a, sep) AS array_to_string(a, sep)",
@@ -51,11 +54,17 @@ class LocalPipeline:
         con = self.con
         con.execute(f"CREATE OR REPLACE TABLE {ds.name} AS {ds.body}")
         n = con.execute(f"SELECT COUNT(*) FROM {ds.name}").fetchone()[0]
+        # Like Lakeflow: every expectation is counted against all input rows first (a row dropped by one
+        # rule still counts as failing the others), and only then are the drop rules applied.
+        counts = []
         for e in ds.expectations:
             failed = con.execute(f"SELECT COUNT(*) FROM {ds.name} WHERE NOT COALESCE(({e.expr}), FALSE)").fetchone()[0]
             con.execute("INSERT INTO expectation_log VALUES (?, ?, ?, ?, ?, ?)", [ds.name, e.name, e.action, e.expr, n, failed])
+            counts.append((e, failed))
+        for e, failed in counts:
             if failed and e.action == "fail":
                 raise RuntimeError(f"{ds.name}: expectation {e.name} failed on {failed} rows -> update stopped")
+        for e, failed in counts:
             if failed and e.action == "drop":
                 con.execute(f"DELETE FROM {ds.name} WHERE NOT COALESCE(({e.expr}), FALSE)")
         if verbose:

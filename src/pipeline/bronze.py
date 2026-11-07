@@ -18,7 +18,9 @@ def make_bronze(table: str):
     @dlt.table(
         name=f"bronze_{table}",
         comment=f"Raw `{table}` from the Dashboard Royale release, unmodified.",
-        table_properties={"quality": "bronze"},
+        # Several release files carry TIMESTAMP_NTZ columns (wall-clock `*_local` times);
+        # Delta refuses to create such tables unless the feature is enabled up front.
+        table_properties={"quality": "bronze", "delta.feature.timestampNtz": "supported"},
     )
     def _bronze():
         return (

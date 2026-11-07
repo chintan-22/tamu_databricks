@@ -57,7 +57,7 @@ AS WITH tickets AS (
     tech_shift,
     COUNT(*) AS fault_tickets,
     AVG(wait_hours) AS avg_wait_hours,
-    PERCENTILE_APPROX(wait_hours, 0.9) AS p90_wait_hours,
+    PERCENTILE(wait_hours, 0.9) AS p90_wait_hours,  -- exact, interpolated: same on Spark and DuckDB
     AVG(fix_hours) AS avg_fix_hours,
     SUM(wait_hours) AS total_wait_hours,
     SUM(down_hours) AS total_down_hours,
