@@ -51,7 +51,7 @@ databricks bundle deploy -t dev                 # catalog/schema default to work
 databricks bundle run gilded_ace_job -t dev     # ingest → pipeline → forecast → export
 ```
 
-Then copy `/Volumes/workspace/gilded_ace/exports/gilded_ace.json` to `dashboard/data/` and set up Genie from `genie/GENIE_SPACE.md`.
+Then copy `/Volumes/workspace/gilded_ace/exports/gilded_ace.json` to `dashboard/data/` and create the Genie agent with `python genie/genie_space.py create` (config in `genie/gilded_ace_floor_analyst.json`; see `genie/GENIE_SPACE.md`).
 
 ## Run locally (no Databricks needed)
 

@@ -56,7 +56,7 @@ Never edit `dashboard/index.html` by hand. It is generated from `dashboard/app.h
 | # | Task | Branch | Owner | Depends on | Done when |
 |---|---|---|---|---|---|
 | 1 | **Run the project on Databricks** | `databricks-run` | Chintan | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace` (+ `gilded_ace_ml`); model `floor_coin_in_forecast@champion` registered |
-| 2 | Create the Genie space | `genie` | | 1 | Space answers the six sample questions in `genie/GENIE_SPACE.md` |
+| 2 | Create the Genie space | `genie` | Chintan | 1 | Space answers the six sample questions in `genie/GENIE_SPACE.md`. *In progress: agent created and tested, config in `genie/gilded_ace_floor_analyst.json`; sample questions still to add* |
 | 3 | Screenshots for the Databricks submission | `screenshots` | | 1, 2 | PNGs in `docs/screenshots/`: pipeline graph, expectations, MLflow runs, registered model, Genie |
 | 4 | Publish the dashboard (GitHub Pages) | `pages-deploy` | | none | Public link opens in a private window; link added to both write-ups and the README |
 | 5 | Record the video(s), ≤ 2 min | none | | 4 | Uploaded; links in the write-ups |
@@ -80,6 +80,8 @@ databricks bundle run gilded_ace_job -t dev
 - Spark/DuckDB differences fixed in the SQL and export code so both engines give identical output: `PERCENTILE` instead of `PERCENTILE_APPROX`, no `''` inside strings, Spark `Decimal` values, and fully qualified dataset names in the event log. CLAUDE.md lists the rules.
 
 After a successful run, download `/Volumes/workspace/gilded_ace/exports/gilded_ace.json`. Run `node local/check_dashboard.js` against it (copy it over `dashboard/data/gilded_ace.json` on your branch). The Databricks numbers should match the local ones; if any differ, investigate before merging.
+
+**2 · Genie.** The agent "Gilded Ace floor analyst" exists in Chintan's workspace, and its config is in git. To build it in another workspace, run `python genie/genie_space.py create`. After changing it in the UI, run `python genie/genie_space.py export` and commit the JSON. Testing showed Genie confused the manager's ranking with the fair ranking and called M-1158 "bad luck". The extra instruction lines in `genie/GENIE_SPACE.md` fix both. With them, *"Why does M-1158 rank so low?"* gets a correct answer: #2 on the manager's list but normal for its spot; 38.6% hit rate vs 31.5% spec, z = +124, inspect.
 
 **4 · GitHub Pages.** Pages can't serve the `dashboard/` folder directly, so add `.github/workflows/pages.yml` that uploads `dashboard/` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages`. Then, in the repo, go to **Settings → Pages → Source: GitHub Actions**. The repo must be public, or the account must have Pages for private repos. The data file is 4.5 MB, which is fine.
 
