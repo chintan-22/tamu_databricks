@@ -1,6 +1,6 @@
 # Team guide: what we built, in plain words
 
-Read this first. It explains the problem, what we did, why, and what is left. Numbers below come from the pipeline's output tables, so they are what the dashboard shows.
+Setup and open tasks are in [../HANDOFF.md](../HANDOFF.md). This guide explains the problem, what we did, why, and what is left. Numbers below come from the pipeline's output tables, so they are what the dashboard shows.
 
 ---
 

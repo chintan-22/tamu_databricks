@@ -11,6 +11,8 @@ The general manager of The Gilded Ace, a fictional 300-machine casino, wants to 
 
 The machines that really underperform for their spot are Royal Draw cabinets set to a 95% payout, in busy zones.
 
+> **New to the project? Start with [HANDOFF.md](HANDOFF.md)**: setup, checks, open tasks and how we work.
+
 | | |
 |---|---|
 | Dashboard (public) | `dashboard/index.html`. Publish the `dashboard/` folder with GitHub Pages, or run `python -m http.server` inside it |

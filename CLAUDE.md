@@ -1,5 +1,7 @@
 # CLAUDE.md: context for coding agents on this repo
 
+**Taking over a task? Read `HANDOFF.md` first** (setup, task table with branch names, PR workflow).
+
 TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** (fictional Gilded Ace casino: are the 10 lowest-earning slot machines truly weak, or luck/location/leak? + $100K plan) and the **Databricks** track (Databricks is the engine). Start with `docs/TEAM_GUIDE.md` (plain-language overview, findings, open tasks). Per-submission text is in `docs/WRITEUP_DASHBOARD_ROYALE.md` (hard limit 400 words, currently 390) and `docs/WRITEUP_DATABRICKS.md`.
 
 ## Layout
