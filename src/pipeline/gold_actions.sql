@@ -32,7 +32,7 @@ inspect_targets AS (
     SUM(CASE WHEN verdict LIKE 'Leak%' THEN GREATEST(0, -luck_usd) / days_on_floor ELSE 0 END) AS benefit_per_day_base,
     SUM(GREATEST(0, -luck_usd) / days_on_floor) * 1.25 AS benefit_per_day_high,
     'gold_machine_scorecard: M-1158 hits 38.6% of spins vs the 31.5% its published paytable allows, over 674k spins (z = +124), and held 3.0% vs 10% theo (luck z = -4.6, beyond the 3.6 cut-off for 310 machines). No other machine is off spec beyond chance.' AS evidence,
-    'Base: the paytable is off spec and is corrected the day after inspection, recovering the machine''s average daily shortfall vs theo for 29 days. Low: nothing is found (it was extreme luck). High: the shortfall was growing (Mar-May hold ran near 0%), +25%.' AS assumption,
+    'Base: the paytable is off spec and is corrected the day after inspection, recovering the machine’s average daily shortfall vs theo for 29 days. Low: nothing is found (it was extreme luck). High: the shortfall was growing (Mar-May hold ran near 0%), +25%.' AS assumption,
     'Paytable/RTP verification report per machine; then weekly hit rate vs spec (control chart, z within +/-3) and hold vs theo.' AS measurement
   FROM inspect_targets
 ),
@@ -53,7 +53,7 @@ aurora AS (
     SUM(theo_per_day * (0.75 / fair_index - 1)) AS benefit_per_day_low,
     SUM(gain_per_day_at_par) AS benefit_per_day_base,
     SUM(theo_per_day * (new_title_index / fair_index - 1)) AS benefit_per_day_high,
-    'gold_machine_scorecard: these earn about half the theo of same-zone peers with equal uptime (fair index ~0.5, 95% CI width < 0.02); Royal Draw''s 95% RTP does not buy extra play (demand index ~1.0). New leased Aurora Link titles run at 1.37x par with no cannibalisation of neighbours (gold_natural_experiments: +1.6%).' AS evidence,
+    'gold_machine_scorecard: these earn about half the theo of same-zone peers with equal uptime (fair index ~0.5, 95% CI width < 0.02); Royal Draw’s 95% RTP does not buy extra play (demand index ~1.0). New leased Aurora Link titles run at 1.37x par with no cannibalisation of neighbours (gold_natural_experiments: +1.6%).' AS evidence,
     'Base: the new title earns par for its zone (index 1.0). Low: it reaches only 0.75 of par. High: it matches the Aurora Link installs (~1.37). 16 operating days after the 14-day lead; 6 h install downtime ignored (<0.1%).' AS assumption,
     'Weekly fair index of each replaced position vs. its zone (target >= 0.9 by week 3), against the remaining weak earners as a holdout group.' AS measurement
   FROM replace_targets
@@ -87,7 +87,7 @@ b40 AS (
     0.05 * b40.theo_per_day AS benefit_per_day_base,
     0.10 * b40.theo_per_day AS benefit_per_day_high,
     CONCAT('gold_natural_experiments: when walkway W-ENT-B40 closed (Mar 3 - Apr 6) Back Forty coin-in fell ',
-      CAST(ROUND(-100 * closure.did_effect, 0) AS STRING), '% vs. the rest of the floor and its door counter fell by the same share; play there tracks foot traffic. Back Forty is the largest location drag in the scorecard.') AS evidence,
+      CAST(CAST(ROUND(-100 * closure.did_effect, 0) AS INT) AS STRING), '% vs. the rest of the floor and its door counter fell by the same share; play there tracks foot traffic. Back Forty is the largest location drag in the scorecard.') AS evidence,
     'Base: signage recovers a 5% lift in Back Forty play (about a sixth of the access effect measured during the closure). Low: no effect. High: 10%. 20 days after the 10-day lead.' AS assumption,
     'Difference-in-differences: Back Forty coin-in per machine-day and door-counter entries vs. other zones, 4 weeks before vs. after install.' AS measurement
   FROM b40 CROSS JOIN closure
@@ -139,7 +139,7 @@ ridge AS (
     0.25 * cost_per_day AS benefit_per_day_base,
     gap_to_northwind * cost_per_day AS benefit_per_day_high,
     'gold_manufacturer_reliability: Ridgeline fails 4.0 times per 100 machine-days vs 1.1-1.7 for the others; 55% of lost theo and $118k of repair cost in six months.' AS evidence,
-    'Base: the sweep cuts Ridgeline faults 25% for the rest of July (no maintenance outcome history exists to calibrate this). High: down to Northwind''s fault rate. Value = lost theo + direct repair cost avoided. 23 days after the 7-day lead.' AS assumption,
+    'Base: the sweep cuts Ridgeline faults 25% for the rest of July (no maintenance outcome history exists to calibrate this). High: down to Northwind’s fault rate. Value = lost theo + direct repair cost avoided. 23 days after the 7-day lead.' AS assumption,
     'Ridgeline faults per 100 machine-days vs. Northwind and Halcyon, 4 weeks before vs. after.' AS measurement
   FROM ridge
 ),

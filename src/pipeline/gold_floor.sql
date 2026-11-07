@@ -107,7 +107,7 @@ FROM unioned;
 CREATE OR REFRESH MATERIALIZED VIEW gold_event_lift
 COMMENT 'Coin-in on each event day vs. the median of same-weekday, non-event days in the same month window.'
 AS WITH base AS (
-  SELECT local_weekday, PERCENTILE_APPROX(coin_in_usd, 0.5) AS median_coin_in
+  SELECT local_weekday, PERCENTILE(coin_in_usd, 0.5) AS median_coin_in  -- exact, interpolated: same on Spark and DuckDB
   FROM silver_property_day
   WHERE events_active IS NULL AND federal_holiday IS NULL
   GROUP BY local_weekday

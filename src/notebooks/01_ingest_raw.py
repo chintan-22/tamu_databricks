@@ -11,9 +11,11 @@
 
 dbutils.widgets.text("catalog", "workspace")
 dbutils.widgets.text("schema", "gilded_ace")
+dbutils.widgets.text("ml_schema", "gilded_ace_ml")
 dbutils.widgets.text("data_release_url", "https://raw.githubusercontent.com/tamu-datathon-org/dashboard-royale/main/data")
 catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
+ml_schema = dbutils.widgets.get("ml_schema")
 base_url = dbutils.widgets.get("data_release_url").rstrip("/")
 
 # COMMAND ----------
@@ -24,6 +26,8 @@ sys.path.append(os.path.abspath(".."))  # make src/gilded_ace importable from th
 from gilded_ace.tables import RAW_TABLES
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.`{schema}`")
+# Forecast outputs + expectation_log live here: Free Edition caps one schema at 100 tables.
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS `{catalog}`.`{ml_schema}`")
 spark.sql(f"CREATE VOLUME IF NOT EXISTS `{catalog}`.`{schema}`.raw COMMENT 'Unmodified challenge release files'")
 spark.sql(f"CREATE VOLUME IF NOT EXISTS `{catalog}`.`{schema}`.exports COMMENT 'Dashboard JSON exports'")
 volume = f"/Volumes/{catalog}/{schema}/raw"

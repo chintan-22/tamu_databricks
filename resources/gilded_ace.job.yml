@@ -8,6 +8,8 @@ resources:
           default: ${var.catalog}
         - name: schema
           default: ${var.schema}
+        - name: ml_schema
+          default: ${var.ml_schema}
         - name: data_release_url
           default: ${var.data_release_url}
       tasks:

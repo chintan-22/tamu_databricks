@@ -2,9 +2,10 @@
 
 Lets the general manager ask follow-up questions in plain English over the governed gold tables. Create it in the Databricks UI: **Genie → New → add tables**.
 
-## Tables to add (catalog `workspace`, schema `gilded_ace`)
+## Tables to add (catalog `workspace`)
 
-`gold_machine_scorecard`, `gold_bank_summary`, `gold_zone_week`, `gold_floor_day`, `gold_downtime_lost`, `gold_repair_response`, `gold_manufacturer_reliability`, `gold_player_segment_month`, `gold_comp_month`, `gold_action_options`, `gold_forecast`
+- Schema `gilded_ace`: `gold_machine_scorecard`, `gold_bank_summary`, `gold_zone_week`, `gold_floor_day`, `gold_downtime_lost`, `gold_repair_response`, `gold_manufacturer_reliability`, `gold_player_segment_month`, `gold_comp_month`, `gold_action_options`
+- Schema `gilded_ace_ml`: `gold_forecast` (the notebooks write here because Free Edition caps a schema at 100 tables)
 
 ## General instructions (paste into the space)
 

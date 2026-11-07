@@ -1,6 +1,6 @@
 # Handoff: how to pick this up
 
-Welcome. The analysis, pipeline, dashboard and write-ups are done and verified locally. What's left is running it on Databricks, publishing, and submitting. This page gets you from a fresh clone to working on a task in about 15 minutes.
+Welcome. The analysis, pipeline, dashboard and write-ups are done, verified locally and running on Databricks (task 1). What's left is the Genie space, screenshots, publishing, and submitting. This page gets you from a fresh clone to working on a task in about 15 minutes.
 
 **Read in this order:** this file → [docs/TEAM_GUIDE.md](docs/TEAM_GUIDE.md) (what we built and found, in plain words) → [CLAUDE.md](CLAUDE.md) (rules your coding agent follows; it loads them automatically).
 
@@ -55,7 +55,7 @@ Never edit `dashboard/index.html` by hand. It is generated from `dashboard/app.h
 
 | # | Task | Branch | Owner | Depends on | Done when |
 |---|---|---|---|---|---|
-| 1 | **Run the project on Databricks** | `databricks-run` | | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace`; model `floor_coin_in_forecast@champion` registered |
+| 1 | **Run the project on Databricks** | `databricks-run` | Chintan | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace` (+ `gilded_ace_ml`); model `floor_coin_in_forecast@champion` registered |
 | 2 | Create the Genie space | `genie` | | 1 | Space answers the six sample questions in `genie/GENIE_SPACE.md` |
 | 3 | Screenshots for the Databricks submission | `screenshots` | | 1, 2 | PNGs in `docs/screenshots/`: pipeline graph, expectations, MLflow runs, registered model, Genie |
 | 4 | Publish the dashboard (GitHub Pages) | `pages-deploy` | | none | Public link opens in a private window; link added to both write-ups and the README |
@@ -74,10 +74,10 @@ databricks bundle validate -t dev
 databricks bundle deploy -t dev
 databricks bundle run gilded_ace_job -t dev
 ```
-This has **never been run on a real workspace**, so expect a few small fixes. The likely spots:
-- `src/pipeline/bronze.py`: the `sys.path` import of `gilded_ace.tables`. If it fails, inline the `RAW_TABLES` dict.
-- `src/notebooks/02_train_forecast.py`: `mlflow.pyfunc.log_model` arguments (the name differs between MLflow versions).
-- `src/notebooks/03_export_dashboard.py`: the `event_log(TABLE(...))` query. If it fails, read the pipeline's event log by pipeline ID.
+**Status: done** on branch `databricks-run`. It runs end to end on Free Edition in about 5 minutes. What it took, in case you redeploy elsewhere:
+- Delta's `timestampNtz` feature is switched on for tables with wall-clock columns (`bronze.py` and the pipeline config). If a table was created before that change, run one full refresh of the pipeline.
+- Free Edition allows 100 tables per schema, and the pipeline's 52 tables already use about 104 with their hidden backing tables. So the notebook-written tables (`gold_forecast*`, `expectation_log`) go in **`workspace.gilded_ace_ml`**. The pipeline tables and the registered model stay in `workspace.gilded_ace`.
+- Spark/DuckDB differences fixed in the SQL and export code so both engines give identical output: `PERCENTILE` instead of `PERCENTILE_APPROX`, no `''` inside strings, Spark `Decimal` values, and fully qualified dataset names in the event log. CLAUDE.md lists the rules.
 
 After a successful run, download `/Volumes/workspace/gilded_ace/exports/gilded_ace.json`. Run `node local/check_dashboard.js` against it (copy it over `dashboard/data/gilded_ace.json` on your branch). The Databricks numbers should match the local ones; if any differ, investigate before merging.
 

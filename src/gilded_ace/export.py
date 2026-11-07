@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import math
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Callable
 
@@ -20,11 +21,13 @@ Query = Callable[[str], pd.DataFrame]
 
 
 def _clean(v):
-    if v is None:
+    if v is None or v is pd.NaT:  # NaT is a datetime subclass; without this it exports as the string "NaT"
         return None
     if isinstance(v, (np.integer,)):
         return int(v)
-    if isinstance(v, (np.floating, float)):
+    # Spark's toPandas() returns DECIMAL columns as decimal.Decimal; DuckDB's .df() returns float64.
+    # Treat both the same so the exported JSON is identical whichever engine produced it.
+    if isinstance(v, (np.floating, float, Decimal)):
         f = float(v)
         if math.isnan(f) or math.isinf(f):
             return None
@@ -48,8 +51,12 @@ def columns(df: pd.DataFrame) -> dict:
     return {c: [_clean(v) for v in df[c].tolist()] for c in df.columns}
 
 
-def export_all(query: Query, out_dir: Path, schema_prefix: str = "") -> Path:
+def export_all(query: Query, out_dir: Path, schema_prefix: str = "", ml_prefix: str | None = None) -> Path:
+    """`schema_prefix` holds the pipeline tables; `ml_prefix` the tables the notebooks write
+    (forecast + expectation_log). On Databricks Free Edition these sit in a sibling schema because
+    one schema is capped at 100 tables. Locally both are empty (one DuckDB file)."""
     t = lambda name: f"{schema_prefix}{name}"  # noqa: E731
+    ml = lambda name: f"{schema_prefix if ml_prefix is None else ml_prefix}{name}"  # noqa: E731
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -121,11 +128,11 @@ def export_all(query: Query, out_dir: Path, schema_prefix: str = "") -> Path:
         "action_options": records(query(f"SELECT * FROM {t('gold_action_options')} ORDER BY recommended DESC, net_base_usd DESC")),
         "action_plan": records(query(f"SELECT * FROM {t('gold_action_plan')}")),
         "action_catalog": records(query(f"SELECT * FROM {t('bronze_action_catalog')}")),
-        "forecast": records(query(f"SELECT * FROM {t('gold_forecast')} ORDER BY gaming_date")),
-        "forecast_metrics": records(query(f"SELECT * FROM {t('gold_forecast_metrics')}")),
-        "forecast_selection": records(query(f"SELECT * FROM {t('gold_forecast_selection')}")),
-        "forecast_params": records(query(f"SELECT * FROM {t('gold_forecast_params')}")),
-        "expectations": records(query(f"SELECT * FROM {t('expectation_log')}")),
+        "forecast": records(query(f"SELECT * FROM {ml('gold_forecast')} ORDER BY gaming_date")),
+        "forecast_metrics": records(query(f"SELECT * FROM {ml('gold_forecast_metrics')}")),
+        "forecast_selection": records(query(f"SELECT * FROM {ml('gold_forecast_selection')}")),
+        "forecast_params": records(query(f"SELECT * FROM {ml('gold_forecast_params')}")),
+        "expectations": records(query(f"SELECT * FROM {ml('expectation_log')}")),
     }
     path = out_dir / "gilded_ace.json"
     path.write_text(json.dumps(payload, separators=(",", ":"), allow_nan=False), encoding="utf-8")

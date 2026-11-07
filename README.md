@@ -47,7 +47,7 @@ GitHub release ──► 01_ingest_raw (notebook) ──► UC Volume /raw  (SHA
 ## Deploy on Databricks
 
 ```sh
-databricks bundle deploy -t dev                 # catalog/schema default to workspace.gilded_ace
+databricks bundle deploy -t dev                 # catalog/schema default to workspace.gilded_ace (+ gilded_ace_ml for forecast tables)
 databricks bundle run gilded_ace_job -t dev     # ingest → pipeline → forecast → export
 ```
 

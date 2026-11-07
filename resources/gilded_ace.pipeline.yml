@@ -12,6 +12,8 @@ resources:
         gilded_ace.raw_volume_path: /Volumes/${var.catalog}/${var.schema}/raw
         # Keep wall-clock columns (`*_local`) exactly as published.
         spark.sql.session.timeZone: UTC
+        # Silver/gold keep TIMESTAMP_NTZ columns from the release; Delta needs this feature enabled.
+        spark.databricks.delta.properties.defaults.feature.timestampNtz: supported
       libraries:
         - file:
             path: ../src/pipeline/bronze.py

@@ -10,6 +10,12 @@ variables:
   schema:
     description: Schema that holds the raw volume and every bronze/silver/gold table.
     default: gilded_ace
+  ml_schema:
+    description: >-
+      Schema for the tables the notebooks write (forecast outputs + expectation_log). Kept apart from
+      `schema` because Free Edition caps a schema at 100 tables and the pipeline's 52 tables plus their
+      internal backing tables already use ~104 of them.
+    default: gilded_ace_ml
   data_release_url:
     description: Where the challenge's Parquet files are downloaded from.
     default: https://raw.githubusercontent.com/tamu-datathon-org/dashboard-royale/main/data

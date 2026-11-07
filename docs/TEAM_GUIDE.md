@@ -100,7 +100,7 @@ What makes it more than "a notebook on Databricks":
 
 ## 7. What's done vs. what's left
 
-**Done (verified locally)**
+**Done (verified locally and on Databricks Free Edition)**
 - Full pipeline (bronze/silver/gold) and all analysis: runs in about 3 s with `python local/run_local.py`
 - Forecast with honest validation
 - Priced action plan
@@ -111,7 +111,7 @@ What makes it more than "a notebook on Databricks":
 
 | Task | Notes |
 |---|---|
-| **Run it on Databricks** | Not yet run on a real workspace. Install the Databricks CLI, `databricks auth login`, then `databricks bundle deploy -t dev` and `databricks bundle run gilded_ace_job -t dev`. The likely fix spots are the import path in `src/pipeline/bronze.py`, the event-log query in `src/notebooks/03_export_dashboard.py`, and model logging in `02_train_forecast.py` |
+| **Run it on Databricks** | Done (branch `databricks-run`): runs end to end on Free Edition and matches the local numbers. To redeploy: install the Databricks CLI, `databricks auth login`, then `databricks bundle deploy -t dev` and `databricks bundle run gilded_ace_job -t dev`. Forecast tables land in `workspace.gilded_ace_ml` (Free Edition caps a schema at 100 tables) |
 | Create the Genie space | Follow `genie/GENIE_SPACE.md`; take screenshots |
 | Screenshots for the Databricks submission | Pipeline graph, expectation results, MLflow runs, registered model, Genie answering a question |
 | Publish the dashboard publicly | GitHub Pages from the `dashboard/` folder; test the link in a private window |
