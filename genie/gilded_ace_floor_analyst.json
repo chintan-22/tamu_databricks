@@ -1,0 +1,880 @@
+{
+  "title": "Gilded Ace floor analyst",
+  "description": "",
+  "serialized_space": {
+    "version": 2,
+    "data_sources": {
+      "tables": [
+        {
+          "identifier": "workspace.gilded_ace.gold_action_options",
+          "column_configs": [
+            {
+              "column_name": "action_type_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "assumption",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "benefit_base_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "benefit_high_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "benefit_low_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "cost_to_benefit",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "cost_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "effective_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "evidence",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "lead_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "measurement",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "net_base_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "quantity",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "recommended",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "targets",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_bank_summary",
+          "column_configs": [
+            {
+              "column_name": "availability",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "bank_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_per_machine_day_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "faults",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "house_win_per_machine_day_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "luck_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machine_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machines",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "occupancy",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theo_per_machine_day_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "zone_name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_comp_month",
+          "column_configs": [
+            {
+              "column_name": "carded_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "carded_share_of_coin_in",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_cost_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_face_value_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_reinvestment",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comps_redeemed",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "month",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "playing_players",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "points_earned",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "points_per_face_dollar",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "points_redeemed",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "tracked_theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "uncarded_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "visits",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "visits_per_playing_player",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_downtime_lost",
+          "column_configs": [
+            {
+              "column_name": "downtime_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "gaming_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "lost_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "lost_theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "manufacturer",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "month",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "tech_shift",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "zone_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "zone_name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_floor_day",
+          "column_configs": [
+            {
+              "column_name": "active_machines",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "available_machine_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "carded_coin_in_share",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "city_convention_attendance_month",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "city_hotel_occupancy",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "city_visitor_yoy",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "city_visitors_month",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_per_machine_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_cost_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_face_value_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "contribution_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "counter_coverage_share",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "events_active",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "faults_opened",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "federal_holiday",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "gaming_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "house_win_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "is_holdout",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "is_weekend",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "local_weekday",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "luck_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "month",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "occupied_machine_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "pos_cash_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "pos_cogs_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "prcp_mm",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "scheduled_seconds",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "tmax_c",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "total_zone_entries_observed",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_machine_scorecard",
+          "column_configs": [
+            {
+              "column_name": "appeal_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "availability",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "bank_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "config_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "contribution_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "days_on_floor",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "demand_index",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "downtime_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "downtime_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "exposure_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fair_index",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fair_index_hi",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fair_index_lo",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fair_index_se",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fair_rank",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "faults",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "gap_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "hit_rate_z",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "hit_spins",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "hold_setting_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "house_win_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "install_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "largest_drag",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "lease_class",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "location_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "location_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "luck_sd_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "luck_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "luck_z",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machine_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "manager_rank",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "manufacturer",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "observed_hit_rate",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "observed_hold",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "occupancy",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "paid_spins",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "retire_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "spec_hit_probability",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theme",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "theo_hold",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "typical_machine_house_win_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "verdict",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "volatility_class",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "zone_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "zone_name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "zones_occupied",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_manufacturer_reliability",
+          "column_configs": [
+            {
+              "column_name": "availability",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "downtime_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "faults",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "faults_per_100_machine_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "lost_theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machine_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machines",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "manufacturer",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "repair_cost_usd",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_player_segment_month",
+          "column_configs": [
+            {
+              "column_name": "age_band",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "ahead_player_months",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_cost_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_face_value_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comps_redeemed",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "contribution_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "home_region",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "luck_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "month",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "opening_tier",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "payout_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "player_months",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "player_net_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "playing_player_months",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "points_earned",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "points_redeemed",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "visits",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_repair_response",
+          "column_configs": [
+            {
+              "column_name": "actual_techs",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "avg_fix_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "avg_wait_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "downtime_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "fault_tickets",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "lost_theo_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "month",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "p90_wait_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "planned_techs",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "repair_cost_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "short_staffed_shifts",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "tech_shift",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "total_down_hours",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "total_wait_hours",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_zone_week",
+          "column_configs": [
+            {
+              "column_name": "coin_in_per_machine_day_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "entries_per_covered_day",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "machine_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "occupancy",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "theo_per_machine_day_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "week_start",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "zone_id",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "zone_name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace_ml.gold_forecast",
+          "column_configs": [
+            {
+              "column_name": "actual_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "baseline_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "events_active",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "gaming_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "local_weekday",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "lower_80_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "model",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "model_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "split",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "upper_80_usd",
+              "enable_format_assistance": true
+            }
+          ]
+        }
+      ]
+    },
+    "instructions": {
+      "text_instructions": [
+        {
+          "content": [
+            "You answer questions about The Gilded Ace, a FICTIONAL casino with synthetic data (Jan 1 - Jun 30, 2025).\n",
+            "- \"Underperforming\" means gold_machine_scorecard.fair_index well below 1.0 (theo vs same-zone peers with equal uptime), never raw house_win_usd.\n",
+            "- Luck: luck_z beyond -3.6 or |hit_rate_z| > 6 is \"off spec - inspect\", never \"cheating\".\n",
+            "- Ratios are ratio of sums: SUM(house_win)/SUM(coin_in), never AVG of daily ratios.\n",
+            "- Player tables are carded (tracked) play only; label player results \"tracked\".\n",
+            "- Comp cost is already inside POS cogs; never subtract it twice.\n",
+            "- Money columns ending _usd are dollars; _cents are cents.\n",
+            "- Never suggest marketing aimed at players by how much they lose.\n",
+            "- manager_rank ranks machines by raw house win (1 = lowest earner, the manager's list). fair_rank ranks by fair_index (1 = weakest for its spot). A machine can be low on manager_rank but normal on fair_rank; say which ranking you mean.\n",
+            "- fair_index near 1.0 means the machine earns normally for its zone. Location effects (location_usd) come from the zone the machine is in, not its position inside the zone.\n",
+            "- Explain a machine's gap with the six parts in gold_machine_scorecard: luck_usd, location_usd, downtime_usd, appeal_usd, hold_setting_usd and time on floor. Quote the largest ones in dollars.\n",
+            "- hit_rate_z and luck_z in gold_machine_scorecard already account for chance. If hit_rate_z > 6 or luck_z < -3.6, chance cannot explain the result: say so, quote observed_hit_rate vs spec_hit_probability and paid_spins, and recommend inspecting the payout. Never say it will regress to the mean or that variance could explain it."
+          ]
+        }
+      ]
+    }
+  }
+}
