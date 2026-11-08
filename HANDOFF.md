@@ -47,7 +47,7 @@ If any of this fails, stop and fix it before starting a task (or ask in the team
 
 1. **Claim a task** in the table below. Put your name in it in a small PR, or say so in the team chat.
 2. **Branch from `main`:** `git checkout main && git pull && git checkout -b <task-branch>` (branch names are in the table).
-3. **Before you push, run the checks:** `run_local.py`, `build_pages.py` (only if you changed `dashboard/app.html`), `check_dashboard.js` (must say 0 mismatches) and `stress_test.py` (all checks pass).
+3. **Before you push, run the checks:** `python local/ci.py` runs all of them (pipeline, export match, dashboard parity, stress test, judge guardrails) and must end with `all checks passed`. Run `git config core.hooksPath .githooks` once so it runs on every commit and push. GitHub Actions runs the same on every push and PR.
 4. **Open a pull request into `main`.** Another teammate glances at it, then merge. Don't push straight to `main`.
 5. **If you change any number** (pipeline SQL, forecast, plan), update the documents that quote it. [CLAUDE.md](CLAUDE.md) lists which ones.
 

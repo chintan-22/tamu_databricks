@@ -65,6 +65,10 @@ python local/stress_test.py        # independent re-checks, robustness tests, br
 cd dashboard && python -m http.server
 ```
 
+## Checks (CI)
+
+`python local/ci.py` runs every check in one go: the pipeline, a comparison of the committed export with a fresh run, dashboard parity, the stress test and `local/judge_check.py` (hackathon guardrails: the submission package, the six questions, the judges' four tasks, the $100K plan rules, the forecast protocol, every quoted number against the gold tables, wording rules, and Spark/DuckDB SQL rules). GitHub Actions runs it on every push and pull request (`.github/workflows/ci.yml`). Run `git config core.hooksPath .githooks` once to run it on every local commit and push too.
+
 ## Method in one paragraph
 
 Each machine's gap to a typical machine splits exactly into six parts:
@@ -84,7 +88,8 @@ databricks.yml, resources/      Asset Bundle: pipeline + job
 src/pipeline/                   Lakeflow SQL (silver, gold_*) + bronze.py (Auto Loader)
 src/notebooks/                  01 ingest · 02 forecast (MLflow/UC) · 03 export
 src/gilded_ace/                 shared Python: table list, forecast, export, Lakeflow SQL parser
-local/                          DuckDB runner for the same pipeline, Pages builder
+local/                          DuckDB runner for the same pipeline, Pages builder, checks (ci.py, judge_check.py)
+.github/workflows/, .githooks/  CI on every push/PR, local commit/push hooks
 dashboard/                      app.html (source) · index.html (built) · data/gilded_ace.json
 genie/, docs/                   Genie space setup, submission documents
 ```

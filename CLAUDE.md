@@ -19,7 +19,9 @@ TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** 
 .venv/Scripts/python local/build_pages.py    # after editing dashboard/app.html
 node local/check_dashboard.js                # must print "verdict mismatches 0", 0 short-window leak flags, and exit 0
 .venv/Scripts/python local/stress_test.py    # re-checks, robustness, broken-data guards; must end "N/N checks passed"
+.venv/Scripts/python local/ci.py             # all of the above + judge guardrails; what CI and the git hooks run
 ```
+`local/judge_check.py` traces every number quoted in `docs/`, the README and the dashboard copy to the gold export. When you quote a new number, add it to `gold_facts()` there; when a pipeline change moves a number, the check fails until the docs are updated. `local/ci.py` restores the committed export after its run, so it never leaves `dashboard/data/gilded_ace.json` modified.
 On Windows set `PYTHONUTF8=1` (or pass `encoding="utf-8"`) when a script reads/writes repo files; the SQL contains non-ASCII characters.
 
 ## Invariants: don't break these

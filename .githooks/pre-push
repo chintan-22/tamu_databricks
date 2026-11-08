@@ -1,0 +1,5 @@
+#!/bin/sh
+# Full gate (a few seconds): everything CI runs, including the stress test. Skip once: git push --no-verify
+echo "pre-push: running local/ci.py"
+CI_FLAGS=""
+. "$(git rev-parse --show-toplevel)/.githooks/_python.sh"

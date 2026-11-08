@@ -54,7 +54,7 @@ Then two statistical checks:
 - **Demand (Q2):** Back Forty dropped during the walkway closure. Big weekends (Super Bowl, March Madness, EDC) lifted play 16–23%. Our own Winter Slot Tournament lifted it 18% without stealing from the weeks around it. June was the weakest month, when real Las Vegas visitor numbers fell 11% year on year. The 8 new Aurora Link machines (March) earn 1.37× normal for their spot without taking play from neighbours.
 - **Downtime (Q3):** about **$102K** of theo lost over six months, only 0.4% of the total. **Ridgeline** machines break 3–4× as often as other brands and cause 55% of it. The night (grave) shift has only one technician, so faults wait about 2 hours. But night hours are worth little, so an extra night tech ($11,520) would recover only about $1K. Not worth it.
 - **Players (Q4):** tracked (loyalty-card) play only. The top 5% of players produce 52% of the expected house win. Only 16% of players ended the six months ahead.
-- **Comps (Q5):** on **May 1** comps suddenly cost 55% fewer points (12.3 → 5.7 points per dollar of menu value). Comp spending went up about $78/day with no clear increase in play. It's too early to be sure, so the next step is a controlled pilot.
+- **Comps (Q5):** on **May 1** comps suddenly cost 53% fewer points overnight (12.3 → 5.7 points per dollar of menu value, April 30 → May 1). Measured on Jan–Apr vs. May–Jun averages (13.1 → 5.8), the drop is 56%. Comp spending went up about $78/day with no clear increase in play. It's too early to be sure, so the next step is a controlled pilot.
 
 ---
 

@@ -10,7 +10,7 @@
 - Our replacement targets are **Royal Draw** machines (95% RTP) in busy zones, at 0.5× par.
 - Downtime cost $102K of theo (0.4%), 55% of it from Ridgeline.
 - The top 5% of players generate 52% of tracked theo; 16% of players finished ahead.
-- On May 1 comps got 55% cheaper in points; reinvestment rose 1.19% → 1.31% with no detectable play lift.
+- On May 1 comps got 53% cheaper in points overnight (Apr 30 → May 1; 56% on Jan–Apr vs. May–Jun averages); reinvestment rose 1.19% → 1.31% with no detectable play lift.
 
 **Model.** A weekday-profile forecast of daily coin-in was chosen on April, frozen on April 30, and scored once on May–June: MAE $68.7K against $218K for the constant baseline. It changes one decision: a single weekend can only reveal a lift of 11%+, so we buy one promotion weekend and a second only if the first clears that bar. Our 11% base case sits at the bar, so a miss is inconclusive.
 
