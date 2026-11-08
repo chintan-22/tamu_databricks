@@ -57,12 +57,12 @@ Never edit `dashboard/index.html` by hand. It is generated from `dashboard/app.h
 
 | # | Task | Branch | Owner | Depends on | Done when |
 |---|---|---|---|---|---|
-| 1 | **Run the project on Databricks** | `databricks-run` | Chintan | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace` (+ `gilded_ace_ml`); model `floor_coin_in_forecast@champion` registered |
+| 1 | ~~Run the project on Databricks~~ **done** | `databricks-run` | Chintan | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace` (+ `gilded_ace_ml`); model `floor_coin_in_forecast@champion` registered |
 | 2 | Create the Genie space | `genie` | Chintan | 1 | Space answers the six sample questions in `genie/GENIE_SPACE.md`. *In progress: agent created and tested, config in `genie/gilded_ace_floor_analyst.json`; sample questions still to add* |
 | 3 | Screenshots for the Databricks submission | `screenshots` | | 1, 2 | PNGs in `docs/screenshots/`: pipeline graph, expectations, MLflow runs, registered model, Genie |
-| 4 | Publish the dashboard (GitHub Pages) | `pages-deploy` | Chintan | none | Public link opens in a private window; link added to both write-ups and the README |
+| 4 | ~~Publish the dashboard (GitHub Pages)~~ **done** | `pages-deploy` | Chintan | none | Public link opens in a private window; link added to both write-ups and the README |
 | 5 | Record the video(s), ≤ 2 min | none | | 4 | Uploaded; links in the write-ups |
-| 6 | Finalise the AI disclosure | `docs-final` | | none | `docs/AI_DISCLOSURE.md` says who did what |
+| 6 | Finalise the AI disclosure | `docs-final` | | none | `docs/AI_DISCLOSURE.md` says who did what. *Drafted from the git history; each teammate confirms their line* |
 | 7 | Final number check + submit both Devposts | `docs-final` | | all | Both submissions in (see §6 checklist) |
 | 8 | *(Optional)* AI/BI dashboard inside Databricks | `aibi-dashboard` | | 1 | A Lakeview dashboard on the gold tables, screenshot added |
 
