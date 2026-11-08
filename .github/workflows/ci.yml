@@ -1,0 +1,53 @@
+# Runs every check on every push and pull request: the pipeline on DuckDB, the committed export vs a
+# fresh run, dashboard parity, the stress test and the hackathon judge guardrails (local/judge_check.py).
+# The same checks run locally with `python local/ci.py` and in the git hooks in .githooks/.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1"   # Mondays: re-run against the newest challenge data release
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Challenge data commit the committed export was built from. A scheduled run uses the newest data
+  # instead, so we hear about a new release (e.g. 0.9.0-draft -> 1.0.0) before judging.
+  DATA_REF: 5f9274bdc3efa6614e6c081becaeadda34c57a32
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the challenge data
+        run: |
+          git clone https://github.com/tamu-datathon-org/dashboard-royale.git "$RUNNER_TEMP/dashboard-royale"
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            git -C "$RUNNER_TEMP/dashboard-royale" checkout --quiet "$DATA_REF"
+          fi
+          echo "data at $(git -C "$RUNNER_TEMP/dashboard-royale" rev-parse --short HEAD)"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # the oldest version the README supports
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run all checks
+        run: python local/ci.py --data "$RUNNER_TEMP/dashboard-royale/data"

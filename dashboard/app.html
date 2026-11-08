@@ -782,8 +782,8 @@ function sectionComps() {
   const did = (aft.carded_coin_in_per_day / bef.carded_coin_in_per_day) / (aft.uncarded_coin_in_per_day / bef.uncarded_coin_in_per_day) - 1;
   const shares = cm.map(r => r.carded_share_of_coin_in), mean = sum(shares) / shares.length, sd = Math.sqrt(sum(shares.map(s => (s - mean) ** 2)) / (shares.length - 1));
   return `<section id="comps">
-  <div class="sec-head"><div class="q">Question 5 · What did the comp program cost, and did anything change?</div><h2>On May 1, comps got 55% cheaper in points</h2>
-  <p class="lede">Comp cost is the house's cost of the item (already inside food-and-beverage cost of goods, counted once). Reinvestment = comp cost ÷ tracked theo.</p></div>
+  <div class="sec-head"><div class="q">Question 5 · What did the comp program cost, and did anything change?</div><h2>On May 1, comps got 53% cheaper in points</h2>
+  <p class="lede">53% is the overnight step from April 30 to May 1 (12.3 → 5.7 points per comp dollar); on Jan–Apr vs. May–Jun averages (13.1 → 5.8, first tile) the drop is 56%. Comp cost is the house's cost of the item (already inside food-and-beverage cost of goods, counted once). Reinvestment = comp cost ÷ tracked theo.</p></div>
   <div class="grid g4" style="margin-bottom:16px">
     ${tile("Points per comp dollar", `${bef.points_per_face_dollar.toFixed(1)} → ${aft.points_per_face_dollar.toFixed(1)}`, "Menu-value dollar, before vs. after May 1; the floor-wide setting allows 5 to 20")}
     ${tile("Comp cost per day", `${fmtUSD(bef.comp_cost_per_day)} → ${fmtUSD(aft.comp_cost_per_day)}`, spct(aft.comp_cost_per_day / bef.comp_cost_per_day - 1) + " after the cut")}

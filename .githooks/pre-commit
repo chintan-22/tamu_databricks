@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fast gate (a few seconds): pipeline, export match, dashboard parity, judge guardrails. Skip once: git commit --no-verify
+echo "pre-commit: running local/ci.py --quick"
+. "$(git rev-parse --show-toplevel)/.githooks/_python.sh" --quick
