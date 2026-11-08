@@ -29,13 +29,15 @@ The data repo must sit **next to** this one (`../dashboard-royale/data`). If you
 ```sh
 .venv\Scripts\python local\run_local.py        # macOS/Linux: .venv/bin/python local/run_local.py
 node local/check_dashboard.js
+.venv\Scripts\python local\stress_test.py      # ~30 s: re-checks, robustness tests, broken-data guards
 ```
 
 You should see:
 - `pipeline done in ~3s`, with no expectation failure
 - `forecast: selected weekday_mean on April validation`
 - `exported dashboard data -> .../dashboard/data`
-- `machines 310 | ... | verdict mismatches 0` and `dashboard rendered: ok`
+- `machines 310 | ... | verdict mismatches 0`, `short-window leak flags on clean machines 0`, and `dashboard rendered: ok`
+- `27/27 checks passed` from the stress test
 
 To view the dashboard: `cd dashboard`, then `python -m http.server 8000`, then open http://localhost:8000. Opening the file directly won't work, because it loads its data over HTTP.
 
@@ -45,7 +47,7 @@ If any of this fails, stop and fix it before starting a task (or ask in the team
 
 1. **Claim a task** in the table below. Put your name in it in a small PR, or say so in the team chat.
 2. **Branch from `main`:** `git checkout main && git pull && git checkout -b <task-branch>` (branch names are in the table).
-3. **Before you push, run the three checks:** `run_local.py`, `build_pages.py` (only if you changed `dashboard/app.html`), and `check_dashboard.js` (must say 0 mismatches).
+3. **Before you push, run the checks:** `run_local.py`, `build_pages.py` (only if you changed `dashboard/app.html`), `check_dashboard.js` (must say 0 mismatches) and `stress_test.py` (all checks pass).
 4. **Open a pull request into `main`.** Another teammate glances at it, then merge. Don't push straight to `main`.
 5. **If you change any number** (pipeline SQL, forecast, plan), update the documents that quote it. [CLAUDE.md](CLAUDE.md) lists which ones.
 
@@ -81,7 +83,7 @@ databricks bundle run gilded_ace_job -t dev
 
 After a successful run, download `/Volumes/workspace/gilded_ace/exports/gilded_ace.json`. Run `node local/check_dashboard.js` against it (copy it over `dashboard/data/gilded_ace.json` on your branch). The Databricks numbers should match the local ones; if any differ, investigate before merging.
 
-**2 · Genie.** The agent "Gilded Ace floor analyst" exists in Chintan's workspace, and its config is in git. To build it in another workspace, run `python genie/genie_space.py create`. After changing it in the UI, run `python genie/genie_space.py export` and commit the JSON. Testing showed Genie confused the manager's ranking with the fair ranking and called M-1158 "bad luck". The extra instruction lines in `genie/GENIE_SPACE.md` fix both. With them, *"Why does M-1158 rank so low?"* gets a correct answer: #2 on the manager's list but normal for its spot; 38.6% hit rate vs 31.5% spec, z = +124, inspect.
+**2 · Genie.** The agent "Gilded Ace floor analyst" exists in Chintan's workspace, and its config is in git. To build it in another workspace, run `python genie/genie_space.py create`. After changing it in the UI, run `python genie/genie_space.py export` and commit the JSON. After pulling a change to the JSON (the `review-fixes` branch added 5 tables and 2 instruction lines), run `python genie/genie_space.py update SPACE_ID` so the live agent picks it up. Testing showed Genie confused the manager's ranking with the fair ranking and called M-1158 "bad luck". The extra instruction lines in `genie/GENIE_SPACE.md` fix both. With them, *"Why does M-1158 rank so low?"* gets a correct answer: #2 on the manager's list but normal for its spot; 38.6% hit rate vs 31.5% spec, z = +124, inspect.
 
 **4 · GitHub Pages.** Pages can't serve the `dashboard/` folder directly, so add `.github/workflows/pages.yml` that uploads `dashboard/` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages`. Then, in the repo, go to **Settings → Pages → Source: GitHub Actions**. The repo must be public, or the account must have Pages for private repos. The data file is 4.5 MB, which is fine.
 

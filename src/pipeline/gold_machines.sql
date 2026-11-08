@@ -172,7 +172,10 @@ SELECT
   END AS largest_drag,
   CASE
     -- A paytable that pays far off its published spec is a leak to inspect, never a verdict.
-    WHEN ABS(s.hit_rate_z) > 6 OR s.luck_z < -3.6 THEN 'Leak? Inspect payout'
+    -- The hit-rate test is binomial and holds on any window. The luck test is a normal approximation
+    -- of a jackpot-skewed sum, so it only counts on 150+ days: on 1-30 day windows it flagged
+    -- 0.6-3 honest machines per window (local/check_dashboard.js checks this stays at 0).
+    WHEN ABS(s.hit_rate_z) > 6 OR (s.luck_z < -3.6 AND s.days_on_floor >= 150) THEN 'Leak? Inspect payout'
     WHEN s.retire_date IS NOT NULL THEN 'Already retired'
     WHEN s.days_on_floor < 150 THEN 'New install (short exposure)'
     -- Weak earner: even after luck, location, uptime and tenure, it earns clearly (95% CI) under 85% of par.

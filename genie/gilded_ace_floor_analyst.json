@@ -80,6 +80,35 @@
           ]
         },
         {
+          "identifier": "workspace.gilded_ace.gold_action_plan",
+          "column_configs": [
+            {
+              "column_name": "action_types",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "benefit_base_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "benefit_high_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "benefit_low_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "budget_kept_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "total_cost_usd",
+              "enable_format_assistance": true
+            }
+          ]
+        },
+        {
           "identifier": "workspace.gilded_ace.gold_bank_summary",
           "column_configs": [
             {
@@ -126,6 +155,48 @@
               "column_name": "zone_name",
               "enable_format_assistance": true,
               "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_comp_change_test",
+          "column_configs": [
+            {
+              "column_name": "carded_coin_in_per_day",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "carded_share",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_cost_per_day",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comp_reinvestment",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "comps_per_day",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "n_days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "period",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "points_per_face_dollar",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "uncarded_coin_in_per_day",
+              "enable_format_assistance": true
             }
           ]
         },
@@ -237,6 +308,55 @@
               "column_name": "zone_name",
               "enable_format_assistance": true,
               "enable_entity_matching": true
+            }
+          ]
+        },
+        {
+          "identifier": "workspace.gilded_ace.gold_event_lift",
+          "column_configs": [
+            {
+              "column_name": "baseline_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "days",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "end_date",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "event_id",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "event_type",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "lift",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "local_scope",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "name",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "start_date",
+              "enable_format_assistance": true
             }
           ]
         },
@@ -620,6 +740,59 @@
           ]
         },
         {
+          "identifier": "workspace.gilded_ace.gold_natural_experiments",
+          "column_configs": [
+            {
+              "column_name": "control_change",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "control_during",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "control_group",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "control_outside",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "did_effect",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "experiment",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "treated_change",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "treated_during",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "treated_group",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "treated_outside",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "window_note",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            }
+          ]
+        },
+        {
           "identifier": "workspace.gilded_ace.gold_player_segment_month",
           "column_configs": [
             {
@@ -853,6 +1026,57 @@
               "enable_format_assistance": true
             }
           ]
+        },
+        {
+          "identifier": "workspace.gilded_ace_ml.gold_forecast_params",
+          "column_configs": [
+            {
+              "column_name": "band_80_high_ratio",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "band_80_low_ratio",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "chosen_model",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "freeze_date",
+              "enable_format_assistance": true,
+              "enable_entity_matching": true
+            },
+            {
+              "column_name": "holdout_mae_baseline",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "holdout_mae_model",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "holdout_mape_model",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "july_forecast_coin_in_usd",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "mae_improvement_vs_baseline",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "min_detectable_promo_lift",
+              "enable_format_assistance": true
+            },
+            {
+              "column_name": "weekend_rmse_pct",
+              "enable_format_assistance": true
+            }
+          ]
         }
       ]
     },
@@ -862,7 +1086,7 @@
           "content": [
             "You answer questions about The Gilded Ace, a FICTIONAL casino with synthetic data (Jan 1 - Jun 30, 2025).\n",
             "- \"Underperforming\" means gold_machine_scorecard.fair_index well below 1.0 (theo vs same-zone peers with equal uptime), never raw house_win_usd.\n",
-            "- Luck: luck_z beyond -3.6 or |hit_rate_z| > 6 is \"off spec - inspect\", never \"cheating\".\n",
+            "- Luck: |hit_rate_z| > 6, or luck_z < -3.6 on a machine with days_on_floor >= 150, is \"off spec - inspect\" (the verdict 'Leak? Inspect payout'), never \"cheating\".\n",
             "- Ratios are ratio of sums: SUM(house_win)/SUM(coin_in), never AVG of daily ratios.\n",
             "- Player tables are carded (tracked) play only; label player results \"tracked\".\n",
             "- Comp cost is already inside POS cogs; never subtract it twice.\n",
@@ -870,8 +1094,10 @@
             "- Never suggest marketing aimed at players by how much they lose.\n",
             "- manager_rank ranks machines by raw house win (1 = lowest earner, the manager's list). fair_rank ranks by fair_index (1 = weakest for its spot). A machine can be low on manager_rank but normal on fair_rank; say which ranking you mean.\n",
             "- fair_index near 1.0 means the machine earns normally for its zone. Location effects (location_usd) come from the zone the machine is in, not its position inside the zone.\n",
-            "- Explain a machine's gap with the six parts in gold_machine_scorecard: luck_usd, location_usd, downtime_usd, appeal_usd, hold_setting_usd and time on floor. Quote the largest ones in dollars.\n",
-            "- hit_rate_z and luck_z in gold_machine_scorecard already account for chance. If hit_rate_z > 6 or luck_z < -3.6, chance cannot explain the result: say so, quote observed_hit_rate vs spec_hit_probability and paid_spins, and recommend inspecting the payout. Never say it will regress to the mean or that variance could explain it."
+            "- Explain a machine's gap with the six parts in gold_machine_scorecard: luck_usd, location_usd, downtime_usd, appeal_usd, hold_setting_usd and exposure_usd (time on floor: days not installed, plus floor-wide luck). Quote the largest ones in dollars.\n",
+            "- hit_rate_z and luck_z in gold_machine_scorecard already account for chance. If verdict = 'Leak? Inspect payout', chance cannot explain the result: say so, quote observed_hit_rate vs spec_hit_probability and paid_spins, and recommend inspecting the payout. Never say it will regress to the mean or that variance could explain it.\n",
+            "- Replacement targets are the targets column of gold_action_options where action_type_id = 'A-REPLACE-LEASE', chosen by theo gained per day if a new title reached zone par: theo_usd / days_on_floor * (1 / fair_index - 1). A 'Weak earner' in Back Forty is real but worth less to replace, because Back Forty's par is low.\n",
+            "- Evidence tables: Back Forty's location effect is gold_natural_experiments (walkway closure); promotion lifts are gold_event_lift; the chosen plan is gold_action_plan (with recommended rows in gold_action_options); the minimum detectable promotion lift is gilded_ace_ml.gold_forecast_params.min_detectable_promo_lift."
           ]
         }
       ]

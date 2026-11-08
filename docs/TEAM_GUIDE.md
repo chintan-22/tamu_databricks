@@ -34,20 +34,21 @@ A machine can earn little for six different reasons. We measure all six, in doll
 | **Time on floor** | It was only installed for part of the period | Days it wasn't on the floor |
 
 Then two statistical checks:
-- **Is the bad luck believable?** We know each game's payout variance from the published game math, so we compute a **luck z-score**. Across 310 machines, anything beyond about ±3.6 is too extreme for chance. Only one machine is that extreme.
+- **Is the bad luck believable?** We know each game's payout variance from the published game math, so we compute a **luck z-score**. Across 310 machines, anything beyond about ±3.6 is too extreme for chance. Only one machine is that extreme. Over short periods (a week, a month) one big jackpot can push an honest machine past −3.6, so the luck test only counts over 150+ days; the **hit-rate test** (how often a spin pays vs. the paytable) works on any period.
 - **Is it weak *for its spot*?** The **fair index** compares a machine's theo with what machines in the same zone earned on the same days, per hour it was working. 1.0 = normal for that spot. 0.5 = half.
 
 ---
 
 ## 3. What we found
 
-**The manager's bottom 10 are mostly the wrong machines.**
+**The manager's bottom 10 are the wrong machines to spend on.**
 - **2 are already retired** (M-1118, M-1120). You can't replace them again.
-- **1 is brand new** (M-5076, on the floor 49 days). It ranks low because it had fewer days.
+- **1 is brand new** (M-5076, on the floor 49 days). It ranks low mostly because it had fewer days (per day it is a low-hold Royal Draw, fair index 0.54).
 - **1 looks like a leak** (M-1158). Its paytable says 31.5% of spins should pay, but 38.6% did, over 674,000 spins. Chance can't explain that (z = +124). **Inspect it, don't replace it.** We call it a lead to check, not cheating.
-- **6 sit in "Back Forty"**, the quietest corner. Any machine there earns about **$26.7K less** over six months. Proof that it's the location: when the walkway from the main entrance to Back Forty was closed for renovation (Mar 3–Apr 6), play there fell **29%** compared with the rest of the floor, and the door counter fell by the same amount. A new machine in the same spot would have the same problem.
+- **6 sit in "Back Forty"**, the quietest corner. Any machine there earns about **$26.7K less** over six months. Proof that it's the location: when the walkway from the main entrance to Back Forty was closed for renovation (Mar 3–Apr 6), play there fell **29%** compared with the rest of the floor, and the door counter fell by the same amount. A new machine in the same spot keeps that part of the gap.
+- **Careful, those six are also weak for their spot.** Compared with other Back Forty machines they earn 0.58–0.67 of par (verdict "Weak earner"); three are Royal Draws. But a new title only lifts them to *Back Forty's* par: about **$103/day** of extra theo each, against **$226/day** for a weak machine in a busy zone. So they are real but cheap fixes, and the money goes further elsewhere.
 
-**The truly weak machines are elsewhere.** The 10 machines that earn least *for their spot* are all **Royal Draw** cabinets set to pay back 95%, so they keep only 5% vs. about 10% for the floor. They sit in busy zones (Center Pit, Main Entrance) and players use them about as much as their neighbours, so the generous setting isn't attracting extra play. **None of them is on the manager's list.** That's the "0 of 10" headline.
+**Where replacement pays.** 67 machines are clearly weak for their spot (23 Royal Draw, 24 Comet Cash, 20 Lucky Lanterns). We pick the 10 where a new title at par gains the most, and they are all **Royal Draw** cabinets set to pay back 95%, so they keep only 5% vs. about 10% for the floor. They sit in busy zones (Center Pit, Main Entrance) and players use them about as much as their neighbours, so the generous setting isn't attracting extra play. **None of them is on the manager's list.** That's the "0 of 10" headline: 0 of the manager's 10 make our *replacement list*, not "all 10 are fine".
 
 **The other five questions:**
 - **Demand (Q2):** Back Forty dropped during the walkway closure. Big weekends (Super Bowl, March Madness, EDC) lifted play 16–23%. Our own Winter Slot Tournament lifted it 18% without stealing from the weeks around it. June was the weakest month, when real Las Vegas visitor numbers fell 11% year on year. The 8 new Aurora Link machines (March) earn 1.37× normal for their spot without taking play from neighbours.
@@ -63,7 +64,7 @@ A simple **forecast of daily floor coin-in** (total money bet per day), based on
 - Picked using **April only** (trained on Jan–Mar), then **frozen on April 30**, then tested **once** on May–June. That's a fair, time-based test with no peeking.
 - Error: **$68.7K/day** vs. **$218K/day** for the required simple baseline (just the average), so 69% better.
 - After testing we saw a different model would have scored better. We **did not switch**, because switching after seeing the test results is cheating, and we say so openly.
-- **The decision it changes:** the forecast's normal weekend error means one promotion weekend can only prove itself if it lifts play by **11%+**. So we buy **one** promotion weekend, check it against the forecast, and buy a second only if it beats 11%.
+- **The decision it changes:** the forecast's normal weekend error means one promotion weekend can only prove itself if it lifts play by **11%+**. So we buy **one** promotion weekend, check it against the forecast, and buy a second only if it beats 11%. Honest caveat: our base-case lift (11%, the average of our two promotions) is right at that bar, so one weekend has about even odds of proving a lift that is really there. A result under 11% means "not proven yet", not "failed".
 
 ---
 
@@ -72,7 +73,7 @@ A simple **forecast of daily floor coin-in** (total money bet per day), based on
 | Action | Cost | Expected extra house win in July | Why |
 |---|---|---|---|
 | Inspect M-1158's payout | $1,200 | ~$5.8K | It's the only machine off spec beyond chance |
-| Lease new titles to replace the 10 weakest Royal Draws | $33,800 | ~$36K (range $16K–$66K) | They earn half of normal for their spot; new titles (Aurora Link) earned 1.37× |
+| Lease new titles for the 10 weak Royal Draws that gain most | $33,800 | ~$36K (range $16K–$66K) | They earn half of normal for their spot; new titles (Aurora Link) earned 1.37× |
 | One slot-tournament weekend, Jul 18–20 | $15,000 | ~$49K (range $18K–$80K) | Our tournament lifted play 18% with no borrowed demand |
 
 We also priced the other options. Replacing the manager's 10 would cost ~$27K for ~$12K back. Back Forty signage is the runner-up. An extra night tech and the Ridgeline maintenance sweep both lose money, and the comp pilot is next month's step. Costs follow the catalogue formula exactly, including lead times.
@@ -90,7 +91,7 @@ Challenge files (GitHub) → 01 ingest notebook → Unity Catalog volume (checks
 ```
 
 What makes it more than "a notebook on Databricks":
-1. **The data-quality rules guard the analysis.** The guide's common mistakes (counting days before install as zero sales, wrong daily ratios, and so on) are written as Lakeflow **expectations**. The pipeline fails if meters don't balance, if our six reasons don't add up, or if the plan breaks the budget rules.
+1. **The data-quality rules guard the analysis.** The guide's common mistakes (counting days before install as zero sales, wrong daily ratios, and so on) are written as Lakeflow **expectations**. The pipeline fails if meters don't balance or go negative, if a payout setting is impossible, if a machine-day is duplicated or missing, if our six reasons don't add up, or if the plan breaks the budget rules. `local/stress_test.py` feeds deliberately broken data through the pipeline to prove each rule fires.
 2. **Re-runnable.** The data is a draft release (0.9.0). When 1.0.0 lands, one job run redoes everything.
 3. **MLflow + Unity Catalog** make the model choice auditable (you can see it was chosen before testing).
 4. **Genie** lets a non-technical manager ask follow-up questions.
@@ -132,6 +133,7 @@ python -m venv .venv
 .venv\Scripts\python local\run_local.py              # rebuilds every table + dashboard/data/gilded_ace.json
 .venv\Scripts\python local\build_pages.py            # rebuilds dashboard/index.html from dashboard/app.html
 node local\check_dashboard.js                        # dashboard maths == pipeline maths
+.venv\Scripts\python local\stress_test.py            # re-checks, robustness tests, broken-data guards
 cd dashboard && ..\.venv\Scripts\python -m http.server   # open http://localhost:8000
 ```
 

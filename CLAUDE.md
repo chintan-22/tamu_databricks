@@ -2,7 +2,7 @@
 
 **Taking over a task? Read `HANDOFF.md` first** (setup, task table with branch names, PR workflow).
 
-TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** (fictional Gilded Ace casino: are the 10 lowest-earning slot machines truly weak, or luck/location/leak? + $100K plan) and the **Databricks** track (Databricks is the engine). Start with `docs/TEAM_GUIDE.md` (plain-language overview, findings, open tasks). Per-submission text is in `docs/WRITEUP_DASHBOARD_ROYALE.md` (hard limit 400 words, currently 390) and `docs/WRITEUP_DATABRICKS.md`.
+TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** (fictional Gilded Ace casino: are the 10 lowest-earning slot machines truly weak, or luck/location/leak? + $100K plan) and the **Databricks** track (Databricks is the engine). Start with `docs/TEAM_GUIDE.md` (plain-language overview, findings, open tasks). Per-submission text is in `docs/WRITEUP_DASHBOARD_ROYALE.md` (hard limit 400 words, currently 396 by a plain whitespace count) and `docs/WRITEUP_DATABRICKS.md`.
 
 ## Layout
 - `src/pipeline/*.sql`: **single source of truth** for all analysis. Lakeflow Declarative Pipeline SQL (`CREATE OR REFRESH MATERIALIZED VIEW name (CONSTRAINT ... EXPECT ...) COMMENT '...' AS SELECT ...;`). `bronze.py` = Auto Loader bronze tables (Databricks only).
@@ -17,21 +17,24 @@ TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** 
 ```sh
 .venv/Scripts/python local/run_local.py      # must finish with no expectation failure
 .venv/Scripts/python local/build_pages.py    # after editing dashboard/app.html
-node local/check_dashboard.js                # must print "verdict mismatches 0" and exit 0
+node local/check_dashboard.js                # must print "verdict mismatches 0", 0 short-window leak flags, and exit 0
+.venv/Scripts/python local/stress_test.py    # re-checks, robustness, broken-data guards; must end "N/N checks passed"
 ```
 On Windows set `PYTHONUTF8=1` (or pass `encoding="utf-8"`) when a script reads/writes repo files; the SQL contains non-ASCII characters.
 
 ## Invariants: don't break these
 - **SQL must run on both Spark and DuckDB.** Use only functions that both have, or that `SPARK_SHIMS` in `local/lakeflow_duckdb.py` maps (`unix_timestamp`, `percentile`, `collect_list`, `array_join`). Use exact `PERCENTILE`, not `PERCENTILE_APPROX`: on Spark the approximate one returns an observed value and disagrees with DuckDB's interpolated result. No 0- vs 1-based array indexing, no aggregate nested in an aggregate, no `::` casts. No `''` inside string literals (Spark reads it as two adjacent strings and drops the quote; use ’). Cast a rounded number to INT before STRING (DuckDB writes `29.0`, Spark `29`). Expectations may reference **output columns only**.
-- **The scorecard maths lives in two places**: `src/pipeline/gold_machines.sql` and `computeScorecard`/`verdictOf` in `dashboard/app.html`. Change both together; `check_dashboard.js` must stay at 0 mismatches.
+- **The scorecard maths lives in two places**: `src/pipeline/gold_machines.sql` and `computeScorecard`/`verdictOf` in `dashboard/app.html`. Change both together; `check_dashboard.js` must stay at 0 mismatches. The leak rule is `|hit_rate_z| > 6 OR (luck_z < -3.6 AND days_on_floor >= 150)` in both: the luck test is a normal approximation that misfires on short windows.
 - **Money/analysis rules from the challenge guide**: ratio of sums (never average daily ratios); exclude off-floor rows (`silver_machine_day` drops them); gaming day 06:00–06:00 via `silver_calendar` UTC bounds (DST day = 23 h); comp cost is already inside POS cogs; player tables = carded play only; theo = coin-in × (1 − RTP).
 - **Forecast protocol** (`forecast.py`): select on April (fit Jan–Mar), freeze 2025-04-30, score once on May–Jun; events are inputs only if `announced_date <= freeze`. Don't re-select the model using holdout scores.
 - **Action plan**: ≤ 3 action types, ≤ $100,000, catalogue cost formula `qty × (unit + per_day × max(0, 30 − lead_days))`. These are enforced as FAIL expectations in `gold_action_plan`. `recommended` set = A-INSPECT, A-REPLACE-LEASE, A-PROMO.
+- **Data guards** (FAIL expectations): `meters_balance`, `meters_nonnegative`, `rtp_is_a_payback` on `silver_machine_day`; `complete_machine_panel` on `silver_calendar` (every machine exactly once per gaming day in `bronze_machine_day`, the shape of release 0.9.0). `local/stress_test.py` injects each fault and expects the update to stop. If release 1.0.0 changes the panel shape, relax that rule deliberately, not by deleting it.
+- **Story the numbers support**: 0 of the manager's 10 make the *replacement list* (targets = weak earners ranked by theo gained per day at zone par). Six of the manager's 10 are "Weak earner" too, in Back Forty, where a fix is worth less than half as much. Never write that the manager's machines are all fine or that the weak machines are "elsewhere".
 - **Wording**: the casino is fictional; unusual payouts are "leads to inspect", never accusations; no ideas that push heavy losers to gamble more.
 - Any number quoted in `docs/` or the dashboard copy must come from a gold table. If the pipeline changes, re-check `docs/WRITEUP_*.md`, `docs/CLAIMS_EVIDENCE.md`, `docs/TEAM_GUIDE.md` and hard-coded text in `dashboard/app.html` (hero/finding sentences).
 
 ## Status
-- Verified locally and on Databricks: full pipeline, forecast, plan, dashboard parity (0/310 mismatches). `dashboard/data/gilded_ace.json` is the Databricks export.
+- Verified locally and on Databricks: full pipeline, forecast, plan, dashboard parity (0/310 mismatches). `dashboard/data/gilded_ace.json` is the Databricks export from the run after the review fixes (branch `review-fixes`). The new expectations (`meters_nonnegative`, `rtp_is_a_payback`, `complete_machine_panel`) and the leak-rule change are confirmed on Databricks: 0 failed rows, the same counts as DuckDB on all 19 expectations, and parity 0/310 with 0 short-window leak flags. The live Genie agent has been updated to the `review-fixes` config (16 tables).
 - **Runs on Databricks Free Edition** (`databricks bundle deploy -t dev && databricks bundle run gilded_ace_job -t dev`, ~5 min). The exported JSON matches the local one: same numbers to 1e-6, same expectation counts.
 - Databricks layout: pipeline tables + registered model `floor_coin_in_forecast@champion` in `workspace.gilded_ace`; the notebook-written tables (`gold_forecast*`, `expectation_log`) in `workspace.gilded_ace_ml` (bundle var `ml_schema`), because Free Edition caps a schema at 100 tables and the pipeline's 52 already use ~104 with their backing tables. `export_all(..., ml_prefix=...)` reads them from there.
 - Delta needs `timestampNtz` enabled for tables with wall-clock columns: set in `bronze.py` table properties and as a pipeline default in `resources/gilded_ace.pipeline.yml`. If a table was created before that, run a full refresh of the pipeline once.
