@@ -15,7 +15,7 @@ Our replacement targets are the weak earners where a new title gains most: Royal
 
 | | |
 |---|---|
-| Dashboard (public) | `dashboard/index.html`. Publish the `dashboard/` folder with GitHub Pages, or run `python -m http.server` inside it |
+| Dashboard (public) | **https://chintan-22.github.io/tamu_databricks/** (GitHub Pages, deployed by `.github/workflows/pages.yml` after CI passes on `main`). Offline: run `python -m http.server` inside `dashboard/`; opening `index.html` directly won't load its data |
 | **Start here (team)** | [docs/TEAM_GUIDE.md](docs/TEAM_GUIDE.md): plain-language overview, findings, open tasks |
 | Write-up: Dashboard Royale (≤ 400 words) | [docs/WRITEUP_DASHBOARD_ROYALE.md](docs/WRITEUP_DASHBOARD_ROYALE.md) |
 | Write-up: Databricks track | [docs/WRITEUP_DATABRICKS.md](docs/WRITEUP_DATABRICKS.md) |

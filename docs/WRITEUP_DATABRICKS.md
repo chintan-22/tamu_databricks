@@ -4,7 +4,7 @@
 
 ## What we built
 
-A casino floor-analytics system for The Gilded Ace, the fictional 300-machine casino from the Dashboard Royale challenge. The manager wanted to replace the 10 slot machines that earned the least. Our system decides whether each machine is truly weak or just unlucky, badly placed, often broken, or paying out off spec. It then prices a $100,000 action plan. A public dashboard shows the result. It is fed entirely by a Databricks lakehouse.
+A casino floor-analytics system for The Gilded Ace, the fictional 300-machine casino from the Dashboard Royale challenge. The manager wanted to replace the 10 slot machines that earned the least. Our system decides whether each machine is truly weak or just unlucky, badly placed, often broken, or paying out off spec. It then prices a $100,000 action plan. A public dashboard shows the result: https://chintan-22.github.io/tamu_databricks/ It is fed entirely by a Databricks lakehouse.
 
 ## How Databricks is used, and why each piece matters
 
