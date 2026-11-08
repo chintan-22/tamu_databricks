@@ -120,7 +120,7 @@ What makes it more than "a notebook on Databricks":
 |---|---|
 | Add the six Genie sample questions | In the Databricks UI (list in `genie/GENIE_SPACE.md`), then `python genie/genie_space.py export` and commit |
 | Screenshots for the Databricks submission | Into `docs/screenshots/`: pipeline graph, expectation results, MLflow runs, registered model, Genie answering a question |
-| Record the 2-minute video | Script in `docs/VIDEO_SCRIPT.md`; add the link to both write-ups (the Dashboard Royale write-up has 2 words to spare, so put the link in Devpost's field if it won't fit) |
+| Record the 2-minute video | Script in `docs/VIDEO_SCRIPT.md`; add the link to both write-ups: in the Dashboard Royale one, next to the dashboard link at the top (a markdown link costs 2 words; there is room for it) |
 | Confirm the AI disclosure | `docs/AI_DISCLOSURE.md` lists who did what from the git history; each of us checks our line |
 | Submit both Devposts | Checklist in HANDOFF.md §7; test every link in a private window |
 | (Optional) AI/BI dashboard inside Databricks | Nice extra for the Databricks judges, built on the same gold tables |

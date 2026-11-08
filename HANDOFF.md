@@ -87,7 +87,7 @@ After a successful run, download `/Volumes/workspace/gilded_ace/exports/gilded_a
 
 **4 · GitHub Pages.** Pages can't serve the `dashboard/` folder directly, so add `.github/workflows/pages.yml` that uploads `dashboard/` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages`. Then, in the repo, go to **Settings → Pages → Source: GitHub Actions**. The repo must be public, or the account must have Pages for private repos. The data file is 4.5 MB, which is fine.
 
-**Status: done.** `.github/workflows/pages.yml` deploys `dashboard/` to https://chintan-22.github.io/tamu_databricks/ after each successful CI run on a push to `main` (or by hand from the Actions tab). The Dashboard Royale write-up is at its word limit, so its link goes in Devpost's link field instead.
+**Status: done.** `.github/workflows/pages.yml` deploys `dashboard/` to https://chintan-22.github.io/tamu_databricks/ after each successful CI run on a push to `main` (or by hand from the Actions tab). Both write-ups link to it at the top.
 
 **7 · Submission checklist**
 - Dashboard Royale Devpost: public dashboard link · video ≤ 2 min · `docs/WRITEUP_DASHBOARD_ROYALE.md` (≤ 400 words; check with a word counter) · `docs/CLAIMS_EVIDENCE.md` · `docs/AI_DISCLOSURE.md` · repo link · the 3 priced actions (already in the write-up)

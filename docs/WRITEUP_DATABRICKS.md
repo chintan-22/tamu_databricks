@@ -2,6 +2,16 @@
 
 *Submission to the Databricks track. The same project is also our Dashboard Royale entry; this text explains what Databricks does in it.*
 
+**Links:** [live dashboard](https://chintan-22.github.io/tamu_databricks/) · [code](https://github.com/chintan-22/tamu_databricks) · video: *add the YouTube link here* · screenshots: `docs/screenshots/`
+
+**Where each judging criterion is answered**
+
+| The track judges… | See |
+|---|---|
+| Technical implementation | [How Databricks is used](#how-databricks-is-used-and-why-each-piece-matters): seven Databricks features, one job, Free Edition |
+| Creativity | [Creative parts](#creative-parts): an exact luck test, an earnings breakdown that adds up, natural experiments in SQL |
+| How meaningfully Databricks improves the solution | The "Why it makes the answer better" column, and [What Databricks changes](#what-databricks-changes) |
+
 ## What we built
 
 A casino floor-analytics system for The Gilded Ace, the fictional 300-machine casino from the Dashboard Royale challenge. The manager wanted to replace the 10 slot machines that earned the least. Our system decides whether each machine is truly weak or just unlucky, badly placed, often broken, or paying out off spec. It then prices a $100,000 action plan. A public dashboard shows the result: https://chintan-22.github.io/tamu_databricks/ It is fed entirely by a Databricks lakehouse.
@@ -24,6 +34,13 @@ A casino floor-analytics system for The Gilded Ace, the fictional 300-machine ca
 - **An earnings breakdown that adds up exactly.** Every machine's gap splits into luck, location, downtime, game appeal, hold setting and time on floor. A pipeline expectation proves the six parts sum to the gap.
 - **Natural experiments in SQL.** A walkway closure, a block of new installs and a game swap are each measured against the rest of the floor over the same days (difference-in-differences).
 - **One codebase, two engines.** The Lakeflow SQL files also run unchanged on DuckDB through a small runner that enforces the same expectations. The dashboard recomputes the scorecard in the browser for any date range and matches the pipeline exactly (0 of 310 verdicts differ).
+
+## What Databricks changes
+
+- **Wrong data can't reach the dashboard.** The challenge data is a draft release. When it changes, one job re-run rebuilds everything, and the expectations stop the update if anything breaks, before a judge or manager sees a number.
+- **The model can't be quietly re-picked.** MLflow records that the forecast was chosen on April only, and Unity Catalog keeps the frozen version the plan uses.
+- **The manager can ask follow-ups without an analyst.** Genie answers plain-English questions from the same gold tables, following the same rules.
+- **Anyone can reproduce it.** `databricks bundle deploy -t dev && databricks bundle run gilded_ace_job -t dev` rebuilds the whole submission in about 5 minutes on Free Edition.
 
 ## Result
 

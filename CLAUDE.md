@@ -2,7 +2,7 @@
 
 **Taking over a task? Read `HANDOFF.md` first** (setup, task table with branch names, PR workflow).
 
-TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** (fictional Gilded Ace casino: are the 10 lowest-earning slot machines truly weak, or luck/location/leak? + $100K plan) and the **Databricks** track (Databricks is the engine). Start with `docs/TEAM_GUIDE.md` (plain-language overview, findings, open tasks). Per-submission text is in `docs/WRITEUP_DASHBOARD_ROYALE.md` (hard limit 400 words, currently 396 by a plain whitespace count) and `docs/WRITEUP_DATABRICKS.md`.
+TAMU Datathon 2026 project, entered in **two** challenges: **Dashboard Royale** (fictional Gilded Ace casino: are the 10 lowest-earning slot machines truly weak, or luck/location/leak? + $100K plan) and the **Databricks** track (Databricks is the engine). Start with `docs/TEAM_GUIDE.md` (plain-language overview, findings, open tasks). Per-submission text is in `docs/WRITEUP_DASHBOARD_ROYALE.md` (hard limit 400 words, currently 386 words, 395 if markdown symbols are counted) and `docs/WRITEUP_DATABRICKS.md`.
 
 ## Layout
 - `src/pipeline/*.sql`: **single source of truth** for all analysis. Lakeflow Declarative Pipeline SQL (`CREATE OR REFRESH MATERIALIZED VIEW name (CONSTRAINT ... EXPECT ...) COMMENT '...' AS SELECT ...;`). `bronze.py` = Auto Loader bronze tables (Databricks only).
