@@ -108,10 +108,24 @@ What makes it more than "a notebook on Databricks":
 - Interactive dashboard (`dashboard/`). It recomputes everything in the browser for any date range and matches the pipeline exactly; `node local/check_dashboard.js` proves it.
 - Write-ups, claims appendix, AI disclosure draft, video script, Genie setup notes
 
-**Left to do (pick one and tell the team)**
+**Also done**
+- Runs on Databricks Free Edition and matches the local numbers (the committed export is the Databricks one)
+- Genie agent "Gilded Ace floor analyst" created, tested and kept in git (`genie/`)
+- Dashboard published: https://chintan-22.github.io/tamu_databricks/ (redeploys after every successful CI run on `main`)
+- CI: `python local/ci.py` and GitHub Actions run every check, including the judge guardrails in `local/judge_check.py`
+
+**Left to do before submitting**
 
 | Task | Notes |
 |---|---|
+| Add the six Genie sample questions | In the Databricks UI (list in `genie/GENIE_SPACE.md`), then `python genie/genie_space.py export` and commit |
+| Screenshots for the Databricks submission | Into `docs/screenshots/`: pipeline graph, expectation results, MLflow runs, registered model, Genie answering a question |
+| Record the 2-minute video | Script in `docs/VIDEO_SCRIPT.md`; add the link to both write-ups (the Dashboard Royale write-up has 2 words to spare, so put the link in Devpost's field if it won't fit) |
+| Confirm the AI disclosure | `docs/AI_DISCLOSURE.md` lists who did what from the git history; each of us checks our line |
+| Submit both Devposts | Checklist in HANDOFF.md §7; test every link in a private window |
+| (Optional) AI/BI dashboard inside Databricks | Nice extra for the Databricks judges, built on the same gold tables |
+
+---|---|
 | **Run it on Databricks** | Done (branch `databricks-run`): runs end to end on Free Edition and matches the local numbers. To redeploy: install the Databricks CLI, `databricks auth login`, then `databricks bundle deploy -t dev` and `databricks bundle run gilded_ace_job -t dev`. Forecast tables land in `workspace.gilded_ace_ml` (Free Edition caps a schema at 100 tables) |
 | Create the Genie space | Follow `genie/GENIE_SPACE.md`; take screenshots |
 | Screenshots for the Databricks submission | Pipeline graph, expectation results, MLflow runs, registered model, Genie answering a question |
