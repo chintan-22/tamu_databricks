@@ -60,7 +60,7 @@ Never edit `dashboard/index.html` by hand. It is generated from `dashboard/app.h
 | 1 | **Run the project on Databricks** | `databricks-run` | Chintan | none | Job `gilded-ace-end-to-end` succeeds; tables exist in `workspace.gilded_ace` (+ `gilded_ace_ml`); model `floor_coin_in_forecast@champion` registered |
 | 2 | Create the Genie space | `genie` | Chintan | 1 | Space answers the six sample questions in `genie/GENIE_SPACE.md`. *In progress: agent created and tested, config in `genie/gilded_ace_floor_analyst.json`; sample questions still to add* |
 | 3 | Screenshots for the Databricks submission | `screenshots` | | 1, 2 | PNGs in `docs/screenshots/`: pipeline graph, expectations, MLflow runs, registered model, Genie |
-| 4 | Publish the dashboard (GitHub Pages) | `pages-deploy` | | none | Public link opens in a private window; link added to both write-ups and the README |
+| 4 | Publish the dashboard (GitHub Pages) | `pages-deploy` | Chintan | none | Public link opens in a private window; link added to both write-ups and the README |
 | 5 | Record the video(s), ≤ 2 min | none | | 4 | Uploaded; links in the write-ups |
 | 6 | Finalise the AI disclosure | `docs-final` | | none | `docs/AI_DISCLOSURE.md` says who did what |
 | 7 | Final number check + submit both Devposts | `docs-final` | | all | Both submissions in (see §6 checklist) |
@@ -86,6 +86,8 @@ After a successful run, download `/Volumes/workspace/gilded_ace/exports/gilded_a
 **2 · Genie.** The agent "Gilded Ace floor analyst" exists in Chintan's workspace, and its config is in git. To build it in another workspace, run `python genie/genie_space.py create`. After changing it in the UI, run `python genie/genie_space.py export` and commit the JSON. After pulling a change to the JSON (the `review-fixes` branch added 5 tables and 2 instruction lines), run `python genie/genie_space.py update SPACE_ID` so the live agent picks it up. Testing showed Genie confused the manager's ranking with the fair ranking and called M-1158 "bad luck". The extra instruction lines in `genie/GENIE_SPACE.md` fix both. With them, *"Why does M-1158 rank so low?"* gets a correct answer: #2 on the manager's list but normal for its spot; 38.6% hit rate vs 31.5% spec, z = +124, inspect.
 
 **4 · GitHub Pages.** Pages can't serve the `dashboard/` folder directly, so add `.github/workflows/pages.yml` that uploads `dashboard/` with `actions/upload-pages-artifact` and deploys with `actions/deploy-pages`. Then, in the repo, go to **Settings → Pages → Source: GitHub Actions**. The repo must be public, or the account must have Pages for private repos. The data file is 4.5 MB, which is fine.
+
+**Status: done.** `.github/workflows/pages.yml` deploys `dashboard/` to https://chintan-22.github.io/tamu_databricks/ after each successful CI run on a push to `main` (or by hand from the Actions tab). The Dashboard Royale write-up is at its word limit, so its link goes in Devpost's link field instead.
 
 **7 · Submission checklist**
 - Dashboard Royale Devpost: public dashboard link · video ≤ 2 min · `docs/WRITEUP_DASHBOARD_ROYALE.md` (≤ 400 words; check with a word counter) · `docs/CLAIMS_EVIDENCE.md` · `docs/AI_DISCLOSURE.md` · repo link · the 3 priced actions (already in the write-up)
